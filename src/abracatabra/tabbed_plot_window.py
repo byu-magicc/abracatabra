@@ -393,6 +393,8 @@ class TabbedPlotWindow:
             case keys.Key_Q:
                 if event.modifiers() & keys.ControlModifier:
                     TabbedPlotWindow.close_all_windows()
+                    if player:
+                        player.close()
                 else:
                     self.qt.close()
             case _:
@@ -441,7 +443,11 @@ class TabbedPlotWindow:
         # self.qt.closeEvent(event)
         del TabbedPlotWindow._registry[self.id]
         TabbedPlotWindow._count -= 1
-        # if TabbedPlotWindow._count == 0:
+        if TabbedPlotWindow._count != 0:
+            return
+        player = AnimationPlayer.instance()
+        if player:
+            player.close()
         #     self._app.quit()
 
     def set_size(self, size: tuple[int | float, int | float]) -> None:
@@ -653,6 +659,7 @@ class TabbedPlotWindow:
                 if TabbedPlotWindow._count > 0:
                     remaining_delay = max(delay - update_time, 0.0)
                     time.sleep(remaining_delay)
+            TabbedPlotWindow.close_all_windows()
             return
 
         start = time.perf_counter()
@@ -691,6 +698,7 @@ class TabbedPlotWindow:
 
         if hold:
             TabbedPlotWindow.show_all()
+        TabbedPlotWindow.close_all_windows()
 
     @staticmethod
     def close_all_windows() -> None:

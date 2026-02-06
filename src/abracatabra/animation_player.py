@@ -3,7 +3,7 @@ from matplotlib.backends.qt_compat import QtWidgets, QtCore, QtGui
 
 from . import keys
 
-from PySide6 import QtWidgets, QtCore, QtGui
+# from PySide6 import QtWidgets, QtCore, QtGui
 
 
 class AnimationPlayer(QtWidgets.QWidget):
@@ -187,6 +187,7 @@ class AnimationPlayer(QtWidgets.QWidget):
             self.show()
             self.raise_()
             self.adjustSize()
+        self._parent = parent
 
         # allow focus from clicks and tabbing
         self.setFocusPolicy(QtCore.Qt.FocusPolicy.StrongFocus)
@@ -225,8 +226,22 @@ class AnimationPlayer(QtWidgets.QWidget):
                     self.next_button.click()
                 else:
                     self.jump_forward_button.click()
+            case keys.Key_Q:
+                super().keyPressEvent(event)
+                if not self._parent:
+                    self.close()
             case _:
                 super().keyPressEvent(event)
+
+    def closeEvent(self, event: QtGui.QCloseEvent) -> None:
+        """
+        Overrides the closeEvent to pause the animation when the player is closed.
+
+        Args:
+            event (QCloseEvent): The close event.
+        """
+        super().closeEvent(event)
+        AnimationPlayer._instance = None
 
     def setup(
         self,
