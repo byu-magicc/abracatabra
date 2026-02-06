@@ -712,6 +712,34 @@ class TabbedPlotWindow:
         TabbedPlotWindow.close_all_windows()
 
     @staticmethod
+    def save_animations() -> None:
+        """
+        Saves the animation from all windows as a video file. This is a
+        placeholder function that is not yet implemented.
+        """
+
+        animations: dict[TabbedPlotWindow, list[FigureWidget]] = {}
+        for key in list(TabbedPlotWindow._registry.keys()):
+            animation_tabs: list[FigureWidget] = []
+            # if not key in TabbedPlotWindow._registry:
+            #     continue  # in case window was closed during iteration
+            window = TabbedPlotWindow._registry[key]
+            for tabs in window.tab_groups:
+                for tab_id in tabs._figure_widgets:
+                    if tabs[tab_id]._callback_registered:
+                        animation_tabs.append(tabs[tab_id])
+                    # if isinstance(tab, FigureWidget) and tab._callback_registered:
+                    #     animation_tabs.append(tab)
+                    # animation_figs.append(tab.figure)
+            animations[window] = animation_tabs
+
+        for win in animations:
+            print(f"Window {win.id} has {len(animations[win])} animation tabs.")
+            for tab in animations[win]:
+                print(f"  Tab '{tab._id}' has a registered animation callback.")
+        # raise NotImplementedError("Saving animations is not yet implemented.")
+
+    @staticmethod
     def close_all_windows() -> None:
         """
         Closes all created windows.

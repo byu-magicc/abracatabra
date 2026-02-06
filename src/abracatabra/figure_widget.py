@@ -63,6 +63,7 @@ class FigureWidget(QtWidgets.QWidget):
         # override default save behavior to use pdf and custom filename
         if isinstance(name, int):
             name = f"figure_{name}"
+        self._id: str = name
         self.canvas.get_default_filetype = lambda: "pdf"
         self.canvas.get_default_filename = lambda: f"{name}.pdf"
 
