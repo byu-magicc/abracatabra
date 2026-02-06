@@ -196,11 +196,15 @@ class TabbedPlotWindow:
         self.qt.setCentralWidget(main_widget)
         self.qt.keyPressEvent = self._key_press_event
 
+        main_layout = QtWidgets.QVBoxLayout(main_widget)
+        main_layout.setSpacing(0)
+        main_layout.setContentsMargins(0, 0, 0, 0)
+
         row_major = True
         tab_groups = []
         if isinstance(nrows, int) and isinstance(ncols, int):
             ## create a grid layout with nrows x ncols
-            main_layout = QtWidgets.QGridLayout(main_widget)
+            tab_layout = QtWidgets.QGridLayout()
             if nrows < 1 or ncols < 1:
                 raise ValueError(
                     f"Can not have {nrows} rows or {ncols} columns. Must be at least 1."
@@ -208,18 +212,18 @@ class TabbedPlotWindow:
             for r in range(nrows):
                 row: list[TabbedFigureWidget] = []
                 for c in range(ncols):
-                    main_layout.setColumnStretch(c, 1)
+                    tab_layout.setColumnStretch(c, 1)
                     widget = TabbedFigureWidget(
                         autohide_tabs, tab_position, tab_fontsize
                     )
                     row.append(widget)
-                    main_layout.addWidget(widget, r, c)
+                    tab_layout.addWidget(widget, r, c)
                 tab_groups.append(row)
         elif isinstance(ncols, list):
             ## create a vertical layout nested with horizontal layouts
             if isinstance(nrows, list):
                 raise ValueError("Either nrows or ncols can be a list, not both.")
-            main_layout = QtWidgets.QVBoxLayout(main_widget)
+            tab_layout = QtWidgets.QVBoxLayout()
             for r in ncols:
                 if r < 1:
                     raise ValueError(f"Can not have {r} columns. Must be at least 1.")
@@ -234,13 +238,13 @@ class TabbedPlotWindow:
                     row.append(widget)
                     hlayout.addWidget(widget)
                 tab_groups.append(row)
-                main_layout.addWidget(widget_row)
+                tab_layout.addWidget(widget_row)
         elif isinstance(nrows, list):
             ## create a horizontal layout nested with vertical layouts
             if isinstance(ncols, list):
                 raise ValueError("Either nrows or ncols can be a list, not both.")
             row_major = False
-            main_layout = QtWidgets.QHBoxLayout(main_widget)
+            tab_layout = QtWidgets.QHBoxLayout()
             for c in nrows:
                 if c < 1:
                     raise ValueError(f"Can not have {c} columns. Must be at least 1.")
@@ -255,10 +259,17 @@ class TabbedPlotWindow:
                     col.append(widget)
                     vlayout.addWidget(widget)
                 tab_groups.append(col)
-                main_layout.addWidget(widget_col)
+                tab_layout.addWidget(widget_col)
         else:
             raise ValueError("Invalid values for `nrows` and `ncols`")
-        main_layout.setContentsMargins(0, 0, 0, 0)
+        tab_layout.setContentsMargins(0, 0, 0, 0)
+
+        main_layout.addLayout(tab_layout)
+
+        test = QtWidgets.QLabel("This is a test")
+        test.setMaximumHeight(25)
+        main_layout.addWidget(test)
+
         self.tab_groups = TabGroupContainer(tab_groups, row_major)
 
         # Register close event handler
