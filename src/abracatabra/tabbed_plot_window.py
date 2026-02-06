@@ -120,6 +120,7 @@ class TabbedPlotWindow:
         ncols: int | list[int] = 1,
         size: tuple[int | float, int | float] = (0.6, 0.8),
         open_window: bool = True,
+        add_animation_player: bool = False,
         autohide_tabs: bool = False,
         tab_position: str = "top",
         tab_fontsize: int = 8,
@@ -150,6 +151,7 @@ class TabbedPlotWindow:
         ncols: int | list[int] = 1,
         size: tuple[int | float, int | float] = (0.6, 0.8),
         open_window: bool = True,
+        add_animation_player: bool = False,
         autohide_tabs: bool = False,
         tab_position: str = "top",
         tab_fontsize: int = 8,
@@ -192,9 +194,21 @@ class TabbedPlotWindow:
         self.qt.setWindowTitle(f"Plot Window: {self.id}")
         self.set_size(size)
         self.qt.setWindowIcon(TabbedPlotWindow._icon1)
-        main_widget = QtWidgets.QWidget()
-        self.qt.setCentralWidget(main_widget)
+        central_widget = QtWidgets.QWidget()
+        self.qt.setCentralWidget(central_widget)
         self.qt.keyPressEvent = self._key_press_event
+
+        if add_animation_player:
+            central_layout = QtWidgets.QVBoxLayout(central_widget)
+            central_layout.setSpacing(0)
+            central_layout.setContentsMargins(0, 0, 0, 0)
+
+            main_widget = QtWidgets.QWidget()
+            central_layout.addWidget(main_widget)
+            player = AnimationPlayer(parent=self.qt)
+            central_layout.addWidget(player, stretch=0)
+        else:
+            main_widget = central_widget
 
         row_major = True
         tab_groups = []
@@ -363,6 +377,12 @@ class TabbedPlotWindow:
         tab_widget = self.tab_groups[row, col][tab_id]
         tab_widget.register_animation_callback(callback)
         return
+
+    def show(self) -> None:
+        """
+        Shows the window if it is not already visible.
+        """
+        self.qt.show()
 
     def update(self, callback_idx: int = 0) -> None:
         """

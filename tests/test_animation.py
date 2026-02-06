@@ -3,15 +3,23 @@ import abracatabra
 from matplotlib.animation import FuncAnimation
 
 
-def test_readme_blit_example(attached_player: bool):
+def test_animation(attached_player: bool, attach_location: str = "figure", save=False):
     blit = True
-    window = abracatabra.TabbedPlotWindow(autohide_tabs=True)
+    window = abracatabra.TabbedPlotWindow(
+        autohide_tabs=True,
+        open_window=True,
+        add_animation_player=attached_player and not attach_location == "figure",
+    )
+
     fig = window.add_figure_tab(
         "robot arm animation",
         include_toolbar=False,
         blit=blit,
-        add_animation_player=attached_player,
+        add_animation_player=attached_player and attach_location == "figure",
     )
+
+    window.show()
+
     ax = fig.add_subplot()
 
     # background elements
@@ -45,16 +53,20 @@ def test_readme_blit_example(attached_player: bool):
         if blit:
             fig.canvas.restore_region(background)  # type: ignore
             ax.draw_artist(arm_line)
-        return ()
 
     window.register_animation_callback(update, "robot arm animation")
 
     dt = 0.01
     abracatabra.TabbedPlotWindow.save_animations()
     abracatabra.animate_all_windows(len(theta_hist), ts=dt, use_player=True)
-    if attached_player:
+    if save:
+
+        def anim_update(frame_idx):
+            update(frame_idx)
+            return ()
+
         anim = FuncAnimation(
-            fig, update, frames=len(theta_hist), blit=blit, interval=dt * 1000
+            fig, anim_update, frames=len(theta_hist), blit=blit, interval=dt * 1000
         )
         # anim.save("robot_arm_animation.gif")
         # anim.save("robot_arm_animation.mp4", writer="ffmpeg")
@@ -63,5 +75,6 @@ def test_readme_blit_example(attached_player: bool):
 
 
 if __name__ == "__main__":
-    test_readme_blit_example(attached_player=False)
-    test_readme_blit_example(attached_player=True)
+    test_animation(attached_player=False, save=True)
+    test_animation(attached_player=True, attach_location="figure")
+    test_animation(attached_player=True, attach_location="window")
