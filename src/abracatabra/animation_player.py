@@ -23,7 +23,7 @@ class AnimationPlayer(QtWidgets.QWidget):
 
     _instance: Optional[Self] = None
     help_text = """Animation Player Controls:
-    Space: Play/Pause
+    k or Space: Play/Pause
     Home: Restart
     End: Go to last frame
     LeftArrow: Step back 1 frame
@@ -37,6 +37,51 @@ class AnimationPlayer(QtWidgets.QWidget):
     Ctrl+Media_Previous: Step back 1 frame
     Ctrl+Media_Next: Step forward 1 frame
     """
+    # shortcuts: dict[QtGui.QKeySequence, str] = {
+    #     QtGui.QKeySequence(keys.Key_K): "toggle_play_pause",
+    #     QtGui.QKeySequence(keys.Key_Space): "toggle_play_pause",
+    #     QtGui.QKeySequence(keys.Key_MediaTogglePlayPause): "toggle_play_pause",
+    #     QtGui.QKeySequence(keys.Key_MediaPlay): "toggle_play_pause",
+    #     QtGui.QKeySequence(keys.Key_MediaPause): ?toggle_play_pause?,
+    #     QtGui.QKeySequence(keys.Key_Home): AnimationPlayer.restart,
+    #     QtGui.QKeySequence(keys.Key_End): AnimationPlayer.go_to_end,
+    #     QtGui.QKeySequence(keys.Key_Left): AnimationPlayer.step_backward,
+    #     QtGui.QKeySequence(
+    #         keys.ControlModifier | keys.Key_Left
+    #     ): AnimationPlayer.jump_backward,
+    #     QtGui.QKeySequence(keys.Key_Right): AnimationPlayer.step_forward,
+    #     QtGui.QKeySequence(
+    #         keys.ControlModifier | keys.Key_Right
+    #     ): AnimationPlayer.jump_forward,
+    # }
+    shortcuts: dict[str, list[QtGui.QKeySequence]] = {
+        "toggle_play_pause": [
+            QtGui.QKeySequence(keys.Key_K),
+            QtGui.QKeySequence(keys.Key_Space),
+            QtGui.QKeySequence(keys.Key_MediaTogglePlayPause),
+            QtGui.QKeySequence(keys.Key_MediaPlay),
+            QtGui.QKeySequence(keys.Key_MediaPause),
+        ],
+        "restart": [QtGui.QKeySequence(keys.Key_Home)],
+        "go_to_end": [QtGui.QKeySequence(keys.Key_End)],
+        "step_backward": [
+            # QtGui.QKeySequence(keys.Key_Left),
+            QtGui.QKeySequence(keys.ControlModifier | keys.Key_MediaPrevious),
+        ],
+        "jump_backward": [
+            QtGui.QKeySequence(keys.ControlModifier | keys.Key_Left),
+            QtGui.QKeySequence(keys.Key_MediaPrevious),
+        ],
+        "step_forward": [
+            # QtGui.QKeySequence(keys.Key_Right),
+            QtGui.QKeySequence(keys.ControlModifier | keys.Key_MediaNext),
+        ],
+        "jump_forward": [
+            QtGui.QKeySequence(keys.ControlModifier | keys.Key_Right),
+            QtGui.QKeySequence(keys.Key_MediaNext),
+        ],
+        "save_animation": [QtGui.QKeySequence(keys.ControlModifier | keys.Key_S)],
+    }
 
     def __init__(self, parent: Optional[QtWidgets.QWidget] = None):
         """
@@ -69,56 +114,106 @@ class AnimationPlayer(QtWidgets.QWidget):
 
         # buttons
         self.play_button = QtWidgets.QPushButton()
+        self.play_button.setFocusPolicy(QtCore.Qt.FocusPolicy.NoFocus)
         icon = self.std_icon(QtWidgets.QStyle.StandardPixmap.SP_MediaPlay)
         self.play_button.setIcon(icon)
-        self.play_button.setToolTip("Play")
+        self.play_button.setToolTip("Play (k/Space)")
         self.play_button.clicked.connect(self._on_play_clicked)
+        # shortcuts = [
+        #     QtGui.QKeySequence(keys.Key_K),
+        #     QtGui.QKeySequence(keys.Key_Space),
+        #     QtGui.QKeySequence(keys.Key_MediaTogglePlayPause),
+        #     QtGui.QKeySequence(keys.Key_MediaPlay),
+        #     QtGui.QKeySequence(keys.Key_MediaPause),
+        # ]
+        # self.play_shortcuts = []
+        # for shortcut in shortcuts:
+        #     play_shortcut = QtGui.QShortcut(shortcut, self)
+        #     play_shortcut.activated.connect(self.play_button.click)
+        #     self.play_shortcuts.append(play_shortcut)
 
         self.restart_button = QtWidgets.QPushButton()
+        self.restart_button.setFocusPolicy(QtCore.Qt.FocusPolicy.NoFocus)
         icon = self.std_icon(QtWidgets.QStyle.StandardPixmap.SP_MediaSkipBackward)
         self.restart_button.setIcon(icon)
-        self.restart_button.setToolTip("Restart animation")
+        self.restart_button.setToolTip("Restart animation (Home)")
         self.restart_button.clicked.connect(self._on_restart_clicked)
+        # self.restart_shortcut = QtGui.QShortcut(QtGui.QKeySequence(keys.Key_Home), self)
+        # self.restart_shortcut.activated.connect(self.restart_button.click)
 
         self.end_button = QtWidgets.QPushButton()
+        self.end_button.setFocusPolicy(QtCore.Qt.FocusPolicy.NoFocus)
         icon = self.std_icon(QtWidgets.QStyle.StandardPixmap.SP_MediaSkipForward)
         self.end_button.setIcon(icon)
-        self.end_button.setToolTip("Go to end of animation")
+        self.end_button.setToolTip("Go to end of animation (End)")
         self.end_button.clicked.connect(self._on_end_clicked)
+        # self.end_shortcut = QtGui.QShortcut(QtGui.QKeySequence(keys.Key_End), self)
+        # self.end_shortcut.activated.connect(self.end_button.click)
 
         self.prev_button = QtWidgets.QPushButton()
+        self.prev_button.setFocusPolicy(QtCore.Qt.FocusPolicy.NoFocus)
         icon = self.std_icon(QtWidgets.QStyle.StandardPixmap.SP_ArrowBack)
         self.prev_button.setIcon(icon)
-        self.prev_button.setToolTip("Step back 1 frame")
+        self.prev_button.setToolTip("Step back 1 frame (LeftArrow)")
         self.prev_button.clicked.connect(self._on_prev_clicked)
         self.prev_button.setAutoRepeat(True)
         self.prev_button.setAutoRepeatDelay(500)
         self.prev_button.setAutoRepeatInterval(50)
+        # shortcuts = [
+        #     QtGui.QKeySequence(keys.Key_Left),
+        #     QtGui.QKeySequence(keys.ControlModifier | keys.Key_MediaPrevious),
+        # ]
+        # self.prev_shortcuts = []
+        # for shortcut in shortcuts:
+        #     prev_shortcut = QtGui.QShortcut(shortcut, self)
+        #     prev_shortcut.activated.connect(self.prev_button.click)
+        #     self.prev_shortcuts.append(prev_shortcut)
 
         self.jump_back_button = QtWidgets.QPushButton()
+        self.jump_back_button.setFocusPolicy(QtCore.Qt.FocusPolicy.NoFocus)
         icon = self.std_icon(QtWidgets.QStyle.StandardPixmap.SP_MediaSeekBackward)
         self.jump_back_button.setIcon(icon)
-        self.jump_back_button.setToolTip("Jump back 0 frames")
+        self.jump_back_button.setToolTip("Jump back 0 frames (Ctrl+LeftArrow)")
         self.jump_back_button.clicked.connect(self._on_jump_back_clicked)
         self.jump_back_button.setAutoRepeat(self.prev_button.autoRepeat())
         self.jump_back_button.setAutoRepeatDelay(self.prev_button.autoRepeatDelay())
         self.jump_back_button.setAutoRepeatInterval(
             self.prev_button.autoRepeatInterval() * 2
         )
+        # shortcuts = [
+        #     QtGui.QKeySequence(keys.ControlModifier | keys.Key_Left),
+        #     QtGui.QKeySequence(keys.Key_MediaPrevious),
+        # ]
+        # self.jump_back_shortcuts = []
+        # for shortcut in shortcuts:
+        #     jump_back_shortcut = QtGui.QShortcut(shortcut, self)
+        #     jump_back_shortcut.activated.connect(self.jump_back_button.click)
+        #     self.jump_back_shortcuts.append(jump_back_shortcut)
 
         self.next_button = QtWidgets.QPushButton()
+        self.next_button.setFocusPolicy(QtCore.Qt.FocusPolicy.NoFocus)
         icon = self.std_icon(QtWidgets.QStyle.StandardPixmap.SP_ArrowForward)
         self.next_button.setIcon(icon)
-        self.next_button.setToolTip("Step forward 1 frame")
+        self.next_button.setToolTip("Step forward 1 frame (RightArrow)")
         self.next_button.clicked.connect(self._on_next_clicked)
         self.next_button.setAutoRepeat(self.prev_button.autoRepeat())
         self.next_button.setAutoRepeatDelay(self.prev_button.autoRepeatDelay())
         self.next_button.setAutoRepeatInterval(self.prev_button.autoRepeatInterval())
+        # shortcuts = [
+        #     QtGui.QKeySequence(keys.Key_Right),
+        #     QtGui.QKeySequence(keys.ControlModifier | keys.Key_MediaNext),
+        # ]
+        # self.next_shortcuts = []
+        # for shortcut in shortcuts:
+        #     next_shortcut = QtGui.QShortcut(shortcut, self)
+        #     next_shortcut.activated.connect(self.next_button.click)
+        #     self.next_shortcuts.append(next_shortcut)
 
         self.jump_forward_button = QtWidgets.QPushButton()
+        self.jump_forward_button.setFocusPolicy(QtCore.Qt.FocusPolicy.NoFocus)
         icon = self.std_icon(QtWidgets.QStyle.StandardPixmap.SP_MediaSeekForward)
         self.jump_forward_button.setIcon(icon)
-        self.jump_forward_button.setToolTip("Jump forward 0 frames")
+        self.jump_forward_button.setToolTip("Jump forward 0 frames (Ctrl+RightArrow)")
         self.jump_forward_button.clicked.connect(self._on_jump_forward_clicked)
         self.jump_forward_button.setAutoRepeat(self.prev_button.autoRepeat())
         self.jump_forward_button.setAutoRepeatDelay(
@@ -127,6 +222,24 @@ class AnimationPlayer(QtWidgets.QWidget):
         self.jump_forward_button.setAutoRepeatInterval(
             self.jump_back_button.autoRepeatInterval()
         )
+        # shortcuts = [
+        #     QtGui.QKeySequence(keys.ControlModifier | keys.Key_Right),
+        #     QtGui.QKeySequence(keys.Key_MediaNext),
+        # ]
+        # self.jump_forward_shortcuts = []
+        # for shortcut in shortcuts:
+        #     jump_forward_shortcut = QtGui.QShortcut(shortcut, self)
+        #     jump_forward_shortcut.activated.connect(self.jump_forward_button.click)
+        #     self.jump_forward_shortcuts.append(jump_forward_shortcut)
+
+        self.save_button = QtWidgets.QPushButton()
+        self.save_button.setFocusPolicy(QtCore.Qt.FocusPolicy.NoFocus)
+        icon = self.std_icon(QtWidgets.QStyle.StandardPixmap.SP_DialogSaveButton)
+        self.save_button.setIcon(icon)
+        self.save_button.setToolTip("Save animation videos (Ctrl+s)")
+        # shortcut = QtGui.QKeySequence(keys.ControlModifier | keys.Key_S)
+        # self.save_shortcut = QtGui.QShortcut(shortcut, self)
+        # self.save_shortcut.activated.connect(self.save_button.click)
 
         # slider
         self.slider = QtWidgets.QSlider(QtCore.Qt.Orientation.Horizontal)
@@ -134,8 +247,11 @@ class AnimationPlayer(QtWidgets.QWidget):
         self.slider.setMaximum(0)
         self.slider.setValue(0)
         self.slider.valueChanged.connect(self._on_slider_changed)
+        # self.slider.setTracking(False)  # only update on release, not while dragging
+        self.slider.setFocusPolicy(QtCore.Qt.FocusPolicy.ClickFocus)
 
         # spin box
+
         self.spin_box = QtWidgets.QSpinBox()
         self.spin_box.setMinimum(0)
         self.spin_box.setMaximum(0)
@@ -164,6 +280,7 @@ class AnimationPlayer(QtWidgets.QWidget):
         bottom_row.addWidget(self.play_button)
         bottom_row.addWidget(self.restart_button)
         bottom_row.addWidget(self.end_button)
+        bottom_row.addWidget(self.save_button)
         bottom_row.addItem(
             QtWidgets.QSpacerItem(0, 0, QtWidgets.QSizePolicy.Policy.Expanding)
         )
@@ -187,51 +304,19 @@ class AnimationPlayer(QtWidgets.QWidget):
             self.show()
             self.raise_()
             self.adjustSize()
+            self.quit_shortcuts = [
+                QtGui.QShortcut(QtGui.QKeySequence(keys.Key_Q), self),
+                QtGui.QShortcut(
+                    QtGui.QKeySequence(keys.Key_Q | keys.ControlModifier), self
+                ),
+            ]
+            for sc in self.quit_shortcuts:
+                sc.activated.connect(self.close)
+            AnimationPlayer.register_shortcuts(self)
         self._parent = parent
 
         # allow focus from clicks and tabbing
         self.setFocusPolicy(QtCore.Qt.FocusPolicy.StrongFocus)
-
-    def keyPressEvent(self, event: QtGui.QKeyEvent) -> None:
-        modifier = keys.ControlModifier
-        match event.key():
-            case (
-                keys.Key_Space
-                | keys.Key_MediaTogglePlayPause
-                | keys.Key_MediaPlay
-                | keys.Key_MediaPause
-            ):
-                self.play_button.click()
-            case keys.Key_Home:
-                self.restart_button.click()
-            case keys.Key_End:
-                self.end_button.click()
-            case keys.Key_Left:
-                if event.modifiers() & modifier:
-                    self.jump_back_button.click()
-                else:
-                    self.prev_button.click()
-            case keys.Key_Right:
-                if event.modifiers() & modifier:
-                    self.jump_forward_button.click()
-                else:
-                    self.next_button.click()
-            case keys.Key_MediaPrevious:
-                if event.modifiers() & modifier:
-                    self.prev_button.click()
-                else:
-                    self.jump_back_button.click()
-            case keys.Key_MediaNext:
-                if event.modifiers() & modifier:
-                    self.next_button.click()
-                else:
-                    self.jump_forward_button.click()
-            case keys.Key_Q:
-                super().keyPressEvent(event)
-                if not self._parent:
-                    self.close()
-            case _:
-                super().keyPressEvent(event)
 
     def closeEvent(self, event: QtGui.QCloseEvent) -> None:
         """
@@ -278,10 +363,15 @@ class AnimationPlayer(QtWidgets.QWidget):
         # relevant UI elements
         self.slider.setMaximum(frames - 1)
         self.spin_box.setMaximum(frames - 1)
-        self.jump_back_button.setToolTip(f"Jump back {self.jump} frames")
-        self.jump_forward_button.setToolTip(f"Jump forward {self.jump} frames")
+        self.jump_back_button.setToolTip(
+            f"Jump back {self.jump} frames (Ctrl+LeftArrow)"
+        )
+        self.jump_forward_button.setToolTip(
+            f"Jump forward {self.jump} frames (Ctrl+RightArrow)"
+        )
         self.slider.setPageStep(self.jump)
         self.frame_label_2.setText(f"/ {self.end_frame}")
+        self._set_time_label()
 
     def step_frame(self) -> bool:
         """
@@ -396,3 +486,127 @@ class AnimationPlayer(QtWidgets.QWidget):
                 AnimationPlayer, or None if it does not exist.
         """
         return cls._instance
+
+    @staticmethod
+    def toggle_play_pause():
+        """
+        Toggles between play and pause states. This is a static method that can
+        be called without an instance, but will only have an effect if an
+        instance of the AnimationPlayer exists.
+        """
+        instance = AnimationPlayer.instance()
+        if instance:
+            instance.play_button.click()
+
+    @staticmethod
+    def step_forward():
+        """
+        Steps the animation forward by one step. This is a static method that can
+        be called without an instance, but will only have an effect if an
+        instance of the AnimationPlayer exists and the animation is not paused.
+        """
+        instance = AnimationPlayer.instance()
+        if instance:
+            instance.next_button.click()
+
+    @staticmethod
+    def step_backward():
+        """
+        Steps the animation backward by one step. This is a static method that can
+        be called without an instance, but will only have an effect if an
+        instance of the AnimationPlayer exists and the animation is not paused.
+        """
+        instance = AnimationPlayer.instance()
+        if instance:
+            instance.prev_button.click()
+
+    @staticmethod
+    def jump_forward():
+        """
+        Jumps the animation forward by the jump amount. This is a static method
+        that can be called without an instance, but will only have an effect if
+        an instance of the AnimationPlayer exists and the animation is not paused.
+        """
+        instance = AnimationPlayer.instance()
+        if instance:
+            instance.jump_forward_button.click()
+
+    @staticmethod
+    def jump_backward():
+        """
+        Jumps the animation backward by the jump amount. This is a static method
+        that can be called without an instance, but will only have an effect if
+        an instance of the AnimationPlayer exists and the animation is not paused.
+        """
+        instance = AnimationPlayer.instance()
+        if instance:
+            instance.jump_back_button.click()
+
+    @staticmethod
+    def restart():
+        """
+        Restarts the animation. This is a static method that can be called without
+        an instance, but will only have an effect if an instance of the
+        AnimationPlayer exists.
+        """
+        instance = AnimationPlayer.instance()
+        if instance:
+            instance.restart_button.click()
+
+    @staticmethod
+    def go_to_end():
+        """
+        Goes to the end of the animation. This is a static method that can be called
+        without an instance, but will only have an effect if an instance of the
+        AnimationPlayer exists.
+        """
+        instance = AnimationPlayer.instance()
+        if instance:
+            instance.end_button.click()
+
+    @staticmethod
+    def save_animation():
+        """
+        Opens the save dialog for saving the animation. This is a static method that can
+        be called without an instance, but will only have an effect if an instance of the
+        AnimationPlayer exists.
+        """
+        instance = AnimationPlayer.instance()
+        if instance:
+            instance.save_button.click()
+
+    @staticmethod
+    def register_shortcuts(window: QtWidgets.QWidget):
+        """
+        Registers shortcuts for the animation player on the given window.
+
+        Args:
+            window (QWidget): The window to register the shortcuts on.
+        """
+        instance = AnimationPlayer.instance()
+        if not instance:
+            return
+        for action, shortcuts in instance.shortcuts.items():
+            for shortcut in shortcuts:
+                sc = QtGui.QShortcut(shortcut, window)
+                match action:
+                    case "toggle_play_pause":
+                        sc.activated.connect(instance.toggle_play_pause)
+                    case "step_forward":
+                        sc.activated.connect(instance.step_forward)
+                    case "step_backward":
+                        sc.activated.connect(instance.step_backward)
+                    case "jump_forward":
+                        sc.activated.connect(instance.jump_forward)
+                    case "jump_backward":
+                        sc.activated.connect(instance.jump_backward)
+                    case "restart":
+                        sc.activated.connect(instance.restart)
+                    case "go_to_end":
+                        sc.activated.connect(instance.go_to_end)
+                    case "save_animation":
+                        sc.activated.connect(instance.save_animation)
+                    case _:
+                        raise ValueError(
+                            f"Unknown action '{action}' for shortcut '{shortcut}'"
+                        )

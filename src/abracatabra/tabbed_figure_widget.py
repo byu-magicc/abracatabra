@@ -5,7 +5,6 @@ from matplotlib.backends.qt_compat import QtWidgets, QtCore, QtGui
 from .figure_widget import FigureWidget
 from .custom_widget import CustomWidget
 
-
 # Suppress atspi accessibility warnings from Qt (started happening after using slots)
 os.environ["QT_LOGGING_RULES"] = "qt.accessibility.atspi=false"
 
@@ -38,6 +37,7 @@ class TabbedFigureWidget(QtWidgets.QTabWidget):
         """
         super().__init__()
         tabbar = self.tabBar()
+        # tabbar.setFocusPolicy(QtCore.Qt.FocusPolicy.StrongFocus)
         assert isinstance(tabbar, QtWidgets.QTabBar)
         tabbar.setAutoHide(autohide)
         tabbar.setContentsMargins(0, 0, 0, 0)
@@ -48,21 +48,6 @@ class TabbedFigureWidget(QtWidgets.QTabWidget):
         self._latest_callback_idx = 0
         self.currentChanged.connect(self._on_tab_changed)
         self.setFocusPolicy(QtCore.Qt.FocusPolicy.StrongFocus)
-
-    def keyPressEvent(self, event: QtGui.QKeyEvent) -> None:
-        """
-        Overrides the keyPressEvent to forward key events to the currently
-        active tab's widget.
-
-        Args:
-            event (QKeyEvent): The key event.
-        """
-        active_widget = self.currentWidget()
-        if isinstance(active_widget, FigureWidget):
-            keypress_used = active_widget._handle_keypress(event)
-            if keypress_used:
-                return
-        super().keyPressEvent(event)
 
     def __getitem__(self, tab_id: str | int) -> FigureWidget | CustomWidget:
         """
@@ -112,7 +97,14 @@ class TabbedFigureWidget(QtWidgets.QTabWidget):
         id_ = str(tab_id)
         if id_ in self._figure_widgets:
             return self._figure_widgets[id_].figure
-        new_tab = FigureWidget(tab_id, blit, include_toolbar, add_animation_player)
+        new_tab = FigureWidget(
+            tab_id, blit, include_toolbar, add_animation_player, self
+        )
+        # if self.tabBar().autoHide():
+        #     if self.count() == 0:
+        #         new_tab.setFocusPolicy(QtCore.Qt.FocusPolicy.StrongFocus)
+        #     else:
+        #         self.widget(0).setFocusPolicy(QtCore.Qt.FocusPolicy.NoFocus)
         self._figure_widgets[id_] = new_tab
         idx = self.currentIndex()
         super().addTab(new_tab, id_)

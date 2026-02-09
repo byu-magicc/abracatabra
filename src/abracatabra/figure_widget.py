@@ -1,12 +1,29 @@
-from matplotlib.backends.qt_compat import QtWidgets, QtGui
+from matplotlib.backends.qt_compat import QtWidgets, QtGui, QtCore
 from matplotlib.backends.backend_qtagg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.backends.backend_qt import NavigationToolbar2QT as NavigationToolbar
 from typing import Callable
+from pathlib import Path
 
 from .animation_player import AnimationPlayer
 from . import keys
 
-# from PySide6 import QtWidgets
+# from PySide6 import QtWidgets, QtGui, QtCore
+
+
+class CustomNavToolbar(NavigationToolbar):
+    toolitems = []
+    _shortcut_map = {
+        "Home": "h",
+        "Back": "c",
+        "Forward": "v",
+        "Pan": "p",
+        "Zoom": "z",
+        "Save": "s",
+    }
+    for text, tooltip, img, callback in NavigationToolbar.toolitems:
+        if text in _shortcut_map:
+            tooltip = f"{tooltip}\n({_shortcut_map[text]})"
+        toolitems.append((text, tooltip, img, callback))
 
 
 class FigureWidget(QtWidgets.QWidget):
@@ -27,7 +44,7 @@ class FigureWidget(QtWidgets.QWidget):
     v: Forward 1 view
     p: Toggle pan mode
     z: Toggle zoom mode
-    Ctrl+s: Save figure
+    s: Save figure
     """
 
     def __init__(
@@ -58,6 +75,7 @@ class FigureWidget(QtWidgets.QWidget):
         layout = QtWidgets.QVBoxLayout()
         layout.setSpacing(0)
         layout.setContentsMargins(0, 0, 0, 0)
+        self.setFocusPolicy(QtCore.Qt.FocusPolicy.StrongFocus)
 
         self.canvas = FigureCanvas()
         # override default save behavior to use pdf and custom filename
@@ -71,7 +89,7 @@ class FigureWidget(QtWidgets.QWidget):
         # self.figure.set_layout_engine('tight') # slows down rendering ~2x
         # self.figure.tight_layout() # does not seem to do anything here
 
-        self.toolbar = NavigationToolbar(self.canvas, self)
+        self.toolbar = CustomNavToolbar(self.canvas, self)
         self.toolbar.setMaximumHeight(25)
         self.toolbar.setVisible(include_toolbar)
 
@@ -87,6 +105,8 @@ class FigureWidget(QtWidgets.QWidget):
         self._update_callback: Callable[[int], None] = lambda i: None
         self._callback_registered = False
         self._latest_callback_idx = 0
+
+        self._setup_shortcuts()
 
     def update_figure(self, callback_idx: int = 0) -> None:
         """
@@ -144,30 +164,82 @@ class FigureWidget(QtWidgets.QWidget):
         self._update_callback = callback
         self._callback_registered = True
 
-    def _handle_keypress(self, event: QtGui.QKeyEvent) -> bool:
+    def save_animation(
+        self,
+        frames: int,
+        dt: float | None = None,
+        filename: str | None = None,
+        **kwargs,
+    ) -> Path | None:
         """
-        Forwards key press events to the figure canvas to enable keyboard
-        shortcuts for matplotlib (e.g., zoom, pan, save, etc.).
+        Saves the animation for this figure if an animation callback has been
+        registered. This is a convenience function that calls the registered
+        animation callback for each frame and saves the resulting frames as an
+        MP4 video (recommended) or gif.
 
         Args:
-            event (QKeyEvent): The key event.
-        Returns:
-            bool: True if the key event was handled, False otherwise.
+            filename (str | None): The filename to save the animation to. If None,
+                uses the default filename specified by `canvas.get_default_filename()`.
+            **kwargs: Additional keyword arguments passed to `matplotlib.animation.FuncAnimation.save()`.
         """
-        match event.key():
-            case keys.Key_P:
-                self.toolbar.pan()
-            case keys.Key_H:
-                self.toolbar.home()
-            case keys.Key_Z:
-                self.toolbar.zoom()
-            case keys.Key_C:
-                self.toolbar.back()
-            case keys.Key_V:
-                self.toolbar.forward()
-            case keys.Key_S:
-                if event.modifiers() & keys.ControlModifier:
-                    self.toolbar.save_figure()
-            case _:
-                return False
-        return True
+        from matplotlib.animation import FuncAnimation
+
+        if not self._callback_registered:
+            raise RuntimeError("No animation callback registered for this figure.")
+        video_dir = Path.home() / "Videos"
+        if not video_dir.exists():
+            video_dir = Path.home() / "Documents"
+        if not video_dir.exists():
+            video_dir = Path.home()
+        default_filename = filename or Path(
+            self.canvas.get_default_filename().replace(" ", "_")
+        ).with_suffix(".mp4")
+        filename, _ = QtWidgets.QFileDialog.getSaveFileName(
+            self,
+            "Save Animation",
+            str(video_dir / default_filename),
+            "MP4 Video (*.mp4);;GIF Image (*.gif);;All Files (*)",
+        )
+        if not filename:
+            return None
+
+        def animate(idx):
+            self._update_callback(idx)
+            return ()
+
+        anim = FuncAnimation(
+            self.figure, animate, frames, interval=dt * 1000 if dt else None
+        )
+        path = Path(filename)
+        if not path.suffix.lower() in [".mp4", ".gif"]:
+            filename += ".mp4"  # default to mp4 if no valid extension
+
+        progress = QtWidgets.QProgressDialog(
+            f"Destination: {path}", "Cancel", 0, frames, self
+        )
+        progress.setWindowTitle("Saving Animation...")
+        progress.setWindowModality(QtCore.Qt.WindowModal)
+        progress.setMinimumDuration(0)
+
+        def progress_callback(frame_idx, total_frames):
+            progress.setValue(frame_idx)
+            if progress.wasCanceled():
+                anim.event_source.stop()
+
+        anim.save(path, progress_callback=progress_callback, **kwargs)
+        progress.close()
+        return path
+
+    def _setup_shortcuts(self):
+        shortcuts = {
+            keys.Key_P: self.toolbar.pan,
+            keys.Key_H: self.toolbar.home,
+            keys.Key_Z: self.toolbar.zoom,
+            keys.Key_C: self.toolbar.back,
+            keys.Key_V: self.toolbar.forward,
+            keys.Key_S: self.toolbar.save_figure,
+        }
+        for key, callback in shortcuts.items():
+            shortcut = QtGui.QShortcut(QtGui.QKeySequence(key), self)
+            shortcut.setContext(QtCore.Qt.WidgetWithChildrenShortcut)
+            shortcut.activated.connect(callback)

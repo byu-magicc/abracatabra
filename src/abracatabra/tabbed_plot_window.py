@@ -14,7 +14,7 @@ else:
 from matplotlib.figure import Figure
 from matplotlib.backends.qt_compat import QtWidgets, QtCore, QtGui
 
-from PySide6 import QtWidgets, QtCore, QtGui
+# from PySide6 import QtWidgets, QtCore, QtGui
 
 # Fix plot font types to work in paper sumbissions (Don't use type 3 fonts)
 import matplotlib
@@ -196,6 +196,7 @@ class TabbedPlotWindow:
         self.qt.setWindowIcon(TabbedPlotWindow._icon1)
         central_widget = QtWidgets.QWidget()
         self.qt.setCentralWidget(central_widget)
+        self._setup_shortcuts()
         self.qt.keyPressEvent = self._key_press_event
 
         if add_animation_player:
@@ -206,6 +207,7 @@ class TabbedPlotWindow:
             main_widget = QtWidgets.QWidget()
             central_layout.addWidget(main_widget)
             player = AnimationPlayer(parent=self.qt)
+            # player.setFocusPolicy(QtCore.Qt.FocusPolicy.StrongFocus)
             central_layout.addWidget(player, stretch=0)
         else:
             main_widget = central_widget
@@ -226,6 +228,7 @@ class TabbedPlotWindow:
                     widget = TabbedFigureWidget(
                         autohide_tabs, tab_position, tab_fontsize
                     )
+                    # widget.setFocusPolicy(QtCore.Qt.FocusPolicy.StrongFocus)
                     row.append(widget)
                     main_layout.addWidget(widget, r, c)
                 tab_groups.append(row)
@@ -245,6 +248,7 @@ class TabbedPlotWindow:
                     widget = TabbedFigureWidget(
                         autohide_tabs, tab_position, tab_fontsize
                     )
+                    # widget.setFocusPolicy(QtCore.Qt.FocusPolicy.StrongFocus)
                     row.append(widget)
                     hlayout.addWidget(widget)
                 tab_groups.append(row)
@@ -266,6 +270,7 @@ class TabbedPlotWindow:
                     widget = TabbedFigureWidget(
                         autohide_tabs, tab_position, tab_fontsize
                     )
+                    # widget.setFocusPolicy(QtCore.Qt.FocusPolicy.StrongFocus)
                     col.append(widget)
                     vlayout.addWidget(widget)
                 tab_groups.append(col)
@@ -405,25 +410,42 @@ class TabbedPlotWindow:
         if 'ctrl+q' is pressed.
         """
         player = AnimationPlayer.instance()
+        print("window key press:", event.text())
+        # if player and player._parent is None:
+        #     TabbedPlotWindow._app.postEvent(player, event)
+        #     # TabbedPlotWindow._app.sendEvent(player, event)
 
-        key_used = True
-        match event.key():
-            case keys.Key_Question:
-                self.display_keyboard_shortcuts()
-            case keys.Key_Q:
-                if event.modifiers() & keys.ControlModifier:
-                    TabbedPlotWindow.close_all_windows()
-                    if player:
-                        player.close()
-                else:
-                    self.qt.close()
-            case _:
-                key_used = False
+        # key_used = True
+        # match event.key():
+        #     case keys.Key_Question:
+        #         self.display_keyboard_shortcuts()
+        #     case keys.Key_Q:
+        #         if event.modifiers() & keys.ControlModifier:
+        #             TabbedPlotWindow.close_all_windows()
+        #             if player:
+        #                 player.close()
+        #         else:
+        #             self.qt.close()
+        #     case _:
+        #         key_used = False
+        #
+        # if not key_used and player and player._parent is None:
+        #     player.keyPressEvent(event)
+        # else:
+        #     QtWidgets.QMainWindow.keyPressEvent(self.qt, event)
 
-        if not key_used and player is not None:
-            player.keyPressEvent(event)
-        else:
-            QtWidgets.QMainWindow.keyPressEvent(self.qt, event)
+    def _setup_shortcuts(self):
+        """
+        Sets up keyboard shortcuts for the window.
+        """
+        shortcuts = {
+            keys.Key_Question: self.display_keyboard_shortcuts,
+            keys.Key_Q: self.qt.close,
+            keys.Key_Q | keys.ControlModifier: TabbedPlotWindow.close_all_windows,
+        }
+        for key, func in shortcuts.items():
+            shortcut = QtGui.QShortcut(QtGui.QKeySequence(key), self.qt)
+            shortcut.activated.connect(func)
 
     def get_keyboard_shortcuts_str(self) -> str:
         help = (
@@ -662,7 +684,13 @@ class TabbedPlotWindow:
 
         if use_player:
             player = AnimationPlayer.instance() or AnimationPlayer()
+            player.save_button.clicked.connect(
+                lambda: TabbedPlotWindow.save_animations(frames, ts)
+            )
             player.setFocus(QtCore.Qt.FocusReason.ActiveWindowFocusReason)
+
+            # for window in TabbedPlotWindow._registry.values():
+            #     AnimationPlayer.register_shortcuts(window.qt)
 
             def callback(frame: int):
                 TabbedPlotWindow.update_all(0.0, frame)
@@ -721,12 +749,15 @@ class TabbedPlotWindow:
         TabbedPlotWindow.close_all_windows()
 
     @staticmethod
-    def save_animations() -> None:
+    def save_animations(frames: int, ts: float) -> None:
         """
-        Saves the animation from all windows as a video file. This is a
-        placeholder function that is not yet implemented.
+        Opens a dialog to save detected animations from all windows as video
+        files. An animation is detected if a tab has a registered animation
+        callback. If no animations are found, a message box will be displayed
+        indicating that no animations were found. If animations are found, a
+        dialog will be displayed with a list of the windows and tabs that have
+        registered animation callbacks, along with a "Save" button for each one.
         """
-
         animations: dict[TabbedPlotWindow, list[FigureWidget]] = {}
         for key in list(TabbedPlotWindow._registry.keys()):
             animation_tabs: list[FigureWidget] = []
@@ -742,17 +773,90 @@ class TabbedPlotWindow:
                     # animation_figs.append(tab.figure)
             animations[window] = animation_tabs
 
+        if len(animations) == 0:
+            QtWidgets.QMessageBox.information(
+                None,
+                "No Animations Found!",
+                "No animation callbacks have been registered.",
+            )
+            return
+
+        save_dialog = QtWidgets.QDialog()
+        save_dialog.setWindowTitle("Save Animations")
+        save_dialog.setMaximumHeight(800)
+        save_dialog.setMinimumWidth(400)
+        layout = QtWidgets.QVBoxLayout(save_dialog)
+        layout.setSpacing(0)
+        layout.setContentsMargins(0, 0, 0, 0)
+        layout.setSizeConstraint(QtWidgets.QLayout.SetMinimumSize)
+
+        scroll_area = QtWidgets.QScrollArea(widgetResizable=True)
+        layout.addWidget(scroll_area)
+
+        container = QtWidgets.QWidget()
+        scroll_area.setWidget(container)
+        container_layout = QtWidgets.QVBoxLayout(container)
+        container_layout.setAlignment(QtCore.Qt.AlignTop)
+        container_layout.setSpacing(0)
+        container_layout.setContentsMargins(10, 10, 10, 10)
+
+        bottom_row = QtWidgets.QWidget()
+        bottom_layout = QtWidgets.QHBoxLayout(bottom_row)
+        bottom_layout.setContentsMargins(0, 0, 0, 0)
+
+        status_label = QtWidgets.QLabel("")
+        bottom_layout.addWidget(status_label)
+
+        bottom_layout.addStretch()
+        cancel_button = QtWidgets.QPushButton("Close")
+        cancel_button.clicked.connect(save_dialog.reject)
+        bottom_layout.addWidget(cancel_button)
+
         for win in animations:
-            print(f"Window {win.id} has {len(animations[win])} animation tabs.")
+            window_label = QtWidgets.QLabel(f"Window: {win.id}")
+            window_label.setStyleSheet("font-weight: bold; font-size: 14px;")
+            container_layout.addWidget(window_label)
+
             for tab in animations[win]:
-                print(f"  Tab '{tab._id}' has a registered animation callback.")
-        # raise NotImplementedError("Saving animations is not yet implemented.")
+                row = QtWidgets.QWidget()
+                row_layout = QtWidgets.QHBoxLayout(row)
+                tab_label = QtWidgets.QLabel(f"    Tab: {tab._id}")
+                tab_label.setStyleSheet("font-size: 12px;")
+                row_layout.addWidget(tab_label)
+                row_layout.addStretch()
+                save_button = QtWidgets.QPushButton("Save")
+
+                def save_fn():
+                    status_label.setText(f"Saving...")
+                    save_path = tab.save_animation(frames, ts)
+                    if save_path:
+                        status_label.setText(f"Saved {save_path.name}")
+                        save_button.setText("Saved!")
+                        save_button.setEnabled(False)
+                    else:
+                        status_label.setText(f"Save canceled/failed")
+
+                save_button.clicked.connect(save_fn)
+                row_layout.addWidget(save_button)
+
+                container_layout.addWidget(row)
+
+            # print(f"Window {win.id} has {len(animations[win])} animation tabs.")
+            # for tab in animations[win]:
+            #     print(f"  Tab '{tab._id}' has a registered animation callback.")
+        layout.addWidget(bottom_row)
+
+        save_dialog.adjustSize()
+        save_dialog.exec()
 
     @staticmethod
     def close_all_windows() -> None:
         """
         Closes all created windows.
         """
+        player = AnimationPlayer.instance()
+        if player:
+            player.close()
         for key in list(TabbedPlotWindow._registry.keys()):
             if not key in TabbedPlotWindow._registry:
                 continue  # in case window was closed elsewhere during iteration
