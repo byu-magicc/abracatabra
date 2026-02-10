@@ -58,9 +58,10 @@ def test_animation(attached_player: bool, attach_location: str = "figure", save=
     window.register_animation_callback(update, "robot arm animation")
 
     window2 = abracatabra.TabbedPlotWindow(ncols=2, autohide_tabs=True)
-    fig2 = window2.add_figure_tab("sin", blit=True)
+    fig2 = window2.add_figure_tab("sin", blit=blit)
     ax2 = fig2.add_subplot()
     (sin_line,) = ax2.plot(t_hist, theta_hist)
+    fig2.tight_layout()
     fig2.canvas.draw()
     sin_line.set_data([], [])
     fig2.canvas.draw()
@@ -73,22 +74,23 @@ def test_animation(attached_player: bool, attach_location: str = "figure", save=
 
     window2.register_animation_callback(update_sin, "sin")
 
-    fig3 = window2.add_figure_tab("cos", blit=True)
+    fig3 = window2.add_figure_tab("cos", blit=blit)
     ax3 = fig3.add_subplot()
-    (cos_line,) = ax3.plot(t_hist, theta_hist)
+    t_cos = t_hist - 5
+    (cos_line,) = ax3.plot(t_cos, np.cos(t_cos))
     fig3.canvas.draw()
     cos_line.set_data([], [])
     fig3.canvas.draw()
     background3 = fig3.canvas.copy_from_bbox(ax3.bbox)  # type: ignore
 
     def update_cos(frame_idx):
-        cos_line.set_data(t_hist[:frame_idx], theta_hist[:frame_idx])
+        cos_line.set_data(t_cos[:frame_idx], np.cos(t_cos[:frame_idx]))
         fig3.canvas.restore_region(background3)  # type: ignore
         ax3.draw_artist(cos_line)
 
     window2.register_animation_callback(update_cos, "cos")
 
-    fig4 = window2.add_figure_tab("wave", blit=True, col=1)
+    fig4 = window2.add_figure_tab("wave", blit=blit, col=1)
     ax4 = fig4.add_subplot()
     (wave_line,) = ax4.plot(t_hist, theta_hist)
     fig4.canvas.draw()
@@ -104,22 +106,10 @@ def test_animation(attached_player: bool, attach_location: str = "figure", save=
     window2.register_animation_callback(update_wave, "wave", col=1)
 
     dt = 0.01
-    # abracatabra.TabbedPlotWindow.save_animations()
-    if save:
-        abracatabra.TabbedPlotWindow.save_animations(len(theta_hist), ts=dt)
-        # tab = window.tab_groups[0, 0].get_tab("robot arm animation")
-        # tab.save_animation(frames=len(theta_hist), dt=dt, filename="test.mp4")
+    # if save:
+    #     tab = window.tab_groups[0, 0].get_tab("robot arm animation")
+    #     tab.save_animation(frames=len(theta_hist), dt=dt, filename="test.mp4")
 
-        # def anim_update(frame_idx):
-        #     update(frame_idx)
-        #     return ()
-        #
-        # anim = FuncAnimation(
-        #     fig, anim_update, frames=len(theta_hist), blit=blit, interval=dt * 1000
-        # )
-        # # anim.save("robot_arm_animation.gif")
-        # # anim.save("robot_arm_animation.mp4", writer="ffmpeg")
-        # anim.save("robot_arm_animation.mp4")
     abracatabra.animate_all_windows(len(theta_hist), ts=dt, use_player=True)
     assert True
 
