@@ -9,7 +9,7 @@ try:
     Key_Question = QtCore.Qt.Key.Key_Question
     Key_Q = QtCore.Qt.Key.Key_Q
     Key_P = QtCore.Qt.Key.Key_P
-    Key_H = QtCore.Ht.Key.Key_H
+    Key_H = QtCore.Qt.Key.Key_H
     Key_Z = QtCore.Qt.Key.Key_Z
     Key_C = QtCore.Qt.Key.Key_C
     Key_V = QtCore.Qt.Key.Key_V
