@@ -20,6 +20,8 @@ This package provides:
 - `__version__`: The version of the abracatabra package.
 """
 
+from pathlib import Path
+
 from .tabbed_plot_window import TabbedPlotWindow, is_interactive
 from .__about__ import __version__
 
@@ -121,6 +123,7 @@ def animate_all_windows(
         frames, ts, step, speed_scale, print_timing, use_player, hold
     )
 
+
 def save_animations(frames: int, ts: float, **kwargs) -> None:
     """
     Opens a file dialog that will display all tabs with registered animation
@@ -129,6 +132,20 @@ def save_animations(frames: int, ts: float, **kwargs) -> None:
     it may not be the most efficient way to save animations, but it is a convenient way to save animations without having to manually create `FuncAnimation` objects for each tab. Note that this function will save the animation for all tabs with registered animation callbacks, so if you only want to save the animation for a specific tab, you should use `FuncAnimation` directly on that tab's figure.
     """
     TabbedPlotWindow.save_animations(frames, ts, **kwargs)
+
+
+def set_animation_savedir(save_dir: str | Path | None) -> None:
+    """
+    Sets the default directory to save animations when using the animation
+    player or the `save_animations` dialog.
+
+    Args:
+        save_dir: The directory to save the videos in. If None, will reset
+            to the default save directory, which looks for the first valid
+            path in this order: 1) "~/Videos" 2) "~/Documents" 3) "~".
+    """
+    TabbedPlotWindow.set_animation_savedir(save_dir)
+
 
 def abracatabra(
     tight_layout: bool = False, block: bool | None = None, verbose: bool = True
@@ -158,6 +175,8 @@ def abracatabra(
         window.qt.setWindowIcon(window._icon2)
     TabbedPlotWindow.show_all(tight_layout, block)
 
+
+del Path
 
 __all__ = [
     "TabbedPlotWindow",

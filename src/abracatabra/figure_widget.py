@@ -46,6 +46,7 @@ class FigureWidget(QtWidgets.QWidget):
     z: Toggle zoom mode
     s: Save figure
     """
+    _animation_savedir = Path.home() / "Videos"
 
     def __init__(
         self,
@@ -167,6 +168,7 @@ class FigureWidget(QtWidgets.QWidget):
         frames: int,
         dt: float | None = None,
         filename: str | None = None,
+        save_dir: str | Path | None = None,
         parent: QtWidgets.QWidget | None = None,
         **kwargs,
     ) -> Path | None:
@@ -182,7 +184,8 @@ class FigureWidget(QtWidgets.QWidget):
                 matplotlib will use default interval.
             filename: The filename to save the animation to. If None, uses the
                 default filename specified by `canvas.get_default_filename()`.
-            **kwargs: Additional keyword arguments passed to `matplotlib.animation.FuncAnimation.save()`.
+            **kwargs: Additional keyword arguments passed to
+                `matplotlib.animation.FuncAnimation.save()`.
 
         Returns:
             path: Path to the saved file, or None if the save dialog was cancelled.
@@ -191,22 +194,26 @@ class FigureWidget(QtWidgets.QWidget):
 
         if not self._callback_registered:
             raise RuntimeError("No animation callback registered for this figure.")
-        video_dir = Path.home() / "Videos"
-        if not video_dir.exists():
-            video_dir = Path.home() / "Documents"
-        if not video_dir.exists():
-            video_dir = Path.home()
-        default_filename = filename or Path(
-            self.canvas.get_default_filename()
-        ).with_suffix(".mp4")
-        filename, _ = QtWidgets.QFileDialog.getSaveFileName(
-            parent or self,
-            "Save Animation",
-            str(video_dir / default_filename),
-            "MP4 Video (*.mp4);;GIF Image (*.gif);;All Files (*)",
-        )
-        if not filename:
+        if save_dir:
+            self.set_animation_savedir(save_dir)
+        video_dir = self.get_animation_savedir()
+
+        if filename:
+            save_file = video_dir / filename
+        else:
+            default_filename = self.canvas.get_default_filename()
+            default_filename = Path(default_filename).with_suffix(".mp4")
+            save_file, _ = QtWidgets.QFileDialog.getSaveFileName(
+                parent or self,
+                "Save Animation",
+                str(video_dir / default_filename),
+                "MP4 Video (*.mp4);;GIF Image (*.gif);;All Files (*)",
+            )
+        if not save_file:
             return None
+        savedir = Path(save_file).parent
+        if savedir.exists():
+            self.set_animation_savedir(savedir)
 
         def animate(idx):
             self._update_callback(idx)
@@ -219,9 +226,9 @@ class FigureWidget(QtWidgets.QWidget):
             interval=dt * 1000 if dt else None,
             blit=self.blit,
         )
-        path = Path(filename)
-        if not path.suffix.lower() in [".mp4", ".gif"]:
-            filename += ".mp4"  # default to mp4 if no valid extension
+        path = Path(save_file)
+        if not path.suffix in [".mp4", ".gif"]:
+            path = path.with_suffix(".mp4")  # default to mp4 if no valid extension
 
         progress = QtWidgets.QProgressDialog(
             f"Destination: {path}", "Cancel", 0, frames, parent or self
@@ -252,3 +259,34 @@ class FigureWidget(QtWidgets.QWidget):
             shortcut = QtGui.QShortcut(QtGui.QKeySequence(key), self)
             shortcut.setContext(QtCore.Qt.WidgetWithChildrenShortcut)
             shortcut.activated.connect(callback)
+
+    @staticmethod
+    def set_animation_savedir(path: str | Path | None = None) -> None:
+        """
+        Sets the default directory for saving animations.
+
+        Args:
+            path: The path to the directory where animations should be saved by
+                default. If None, uses the user's Videos directory if it exists,
+                otherwise falls back to Documents, then home directory.
+        """
+        if path:
+            save_dir = Path(path)
+        else:
+            save_dir = Path.home() / "Videos"
+
+        if not save_dir.exists():
+            save_dir = Path.home() / "Documents"
+        if not save_dir.exists():
+            save_dir = Path.home()
+        FigureWidget._animation_savedir = save_dir
+
+    @staticmethod
+    def get_animation_savedir() -> Path:
+        """
+        Gets the current default directory for saving animations.
+
+        Returns:
+            The path to the directory where animations are currently saved by default.
+        """
+        return FigureWidget._animation_savedir

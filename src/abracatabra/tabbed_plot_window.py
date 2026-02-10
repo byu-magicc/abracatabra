@@ -5,6 +5,7 @@ import os
 import time
 import random
 from typing import Callable
+from pathlib import Path
 
 if sys.version_info < (3, 11):
     from typing_extensions import Self
@@ -754,7 +755,9 @@ class TabbedPlotWindow:
         TabbedPlotWindow.close_all_windows()
 
     @staticmethod
-    def save_animations(frames: int, ts: float, **kwargs) -> None:
+    def save_animations(
+        frames: int, ts: float, save_dir: str | Path | None = None, **kwargs
+    ) -> None:
         """
         Opens a dialog to save detected animations from all windows as video
         files. An animation is detected if a tab has a registered animation
@@ -762,6 +765,17 @@ class TabbedPlotWindow:
         indicating that no animations were found. If animations are found, a
         dialog will be displayed with a list of the windows and tabs that have
         registered animation callbacks, along with a "Save" button for each one.
+
+        Args:
+            frames: The number of frames in the animation.
+            ts (seconds): The time step between frames in seconds. This is used
+                to set the frame rate of the saved video (frame rate = 1/ts).
+            save_dir: The directory to save the videos in. If None, will reset
+                to the default save directory (see `set_animation_savedir` method).
+            **kwargs: Additional keyword arguments to pass to the `save_animation`
+                method of each `FigureWidget`. This can include arguments for the
+                codec, bitrate, etc. See `matplotlib.animation.FuncAnimation`
+                documentation for more details on available arguments.
         """
         animations: dict[TabbedPlotWindow, list[FigureWidget]] = {}
         for key in list(TabbedPlotWindow._registry.keys()):
@@ -828,11 +842,13 @@ class TabbedPlotWindow:
                 row_layout.addStretch()
                 save_button = QtWidgets.QPushButton("Save")
 
-                def make_save_fn(current_tab, button):
+                def make_save_fn(
+                    current_tab: FigureWidget, button: QtWidgets.QPushButton
+                ):
                     def save_fn():
                         status_label.setText(f"Saving...")
                         save_path = current_tab.save_animation(
-                            frames, ts, parent=save_dialog, **kwargs
+                            frames, ts, save_dir=save_dir, parent=save_dialog, **kwargs
                         )
                         if save_path:
                             status_label.setText(f"Saved {save_path.name}")
@@ -840,6 +856,7 @@ class TabbedPlotWindow:
                             button.setEnabled(False)
                         else:
                             status_label.setText(f"Save canceled/failed")
+
                     return save_fn
 
                 save_button.clicked.connect(make_save_fn(tab, save_button))
@@ -849,6 +866,19 @@ class TabbedPlotWindow:
 
         save_dialog.adjustSize()
         save_dialog.exec()
+
+    @staticmethod
+    def set_animation_savedir(save_dir: str | Path | None) -> None:
+        """
+        Sets the default directory to save animations when using the animation
+        player or the `save_animations` dialog.
+
+        Args:
+            save_dir: The directory to save the videos in. If None, will reset
+                to the default save directory, which looks for the first valid
+                path in this order: 1) "~/Videos" 2) "~/Documents" 3) "~".
+        """
+        FigureWidget.set_animation_savedir(save_dir)
 
     @staticmethod
     def close_all_windows() -> None:
