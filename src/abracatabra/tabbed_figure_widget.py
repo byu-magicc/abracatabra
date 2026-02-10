@@ -55,6 +55,21 @@ class TabbedFigureWidget(QtWidgets.QTabWidget):
         self.tabBarClicked.connect(self._on_tab_clicked)
         self.setFocusPolicy(QtCore.Qt.FocusPolicy.NoFocus)
 
+        # Visual indicator for focused tab group (thin accent bar)
+        self._focused = False
+        self._focus_indicator = QtWidgets.QWidget(self)
+        self._focus_indicator.setFixedHeight(3)
+        self._focus_indicator.setStyleSheet("background-color: #2196F3;")
+        self._focus_indicator.hide()
+        self._update_focus_indicator_position()
+        self._update_focus_style()
+        
+        # Connect to global focus change signal instead of using event filters
+        # This eliminates race conditions from deferred callbacks during cleanup
+        app = QtWidgets.QApplication.instance()
+        if app:
+            app.focusChanged.connect(self._on_focus_changed)
+
     def __getitem__(self, tab_id: str | int) -> FigureWidget | CustomWidget:
         """
         Provides dictionary-like access to tabs by their ID for convenience.
@@ -67,6 +82,56 @@ class TabbedFigureWidget(QtWidgets.QTabWidget):
                 given tab ID.
         """
         return self.get_tab(tab_id)
+
+    def _on_focus_changed(self, old_widget, new_widget):
+        """
+        Slot called when application focus changes. Updates the focus
+        indicator based on whether the new focused widget is a descendant
+        of this tab group.
+        
+        This approach is cleaner than using event filters and deferred
+        callbacks, eliminating race conditions during widget cleanup.
+        
+        Args:
+            old_widget: The previously focused widget (may be None).
+            new_widget: The newly focused widget (may be None).
+        """
+        # Check if the newly focused widget is a child of this tab group
+        has_focus = new_widget is not None and self.isAncestorOf(new_widget)
+        
+        if self._focused != has_focus:
+            self._focused = has_focus
+            self._update_focus_style()
+
+    def _update_focus_indicator_position(self):
+        """
+        Position the focus indicator bar at the top edge of the widget.
+        """
+        self._focus_indicator.setGeometry(0, 0, self.width(), 3)
+        self._focus_indicator.raise_()
+
+    def resizeEvent(self, event):
+        """
+        Handle resize events to reposition the focus indicator bar.
+
+        Args:
+            event: The resize event.
+        """
+        super().resizeEvent(event)
+        self._update_focus_indicator_position()
+
+    def _update_focus_style(self):
+        """
+        Update the visual style of the tab group based on focus state.
+        Shows a thin blue accent bar at the top when focused, works even
+        with autohide tabs. No changes to tab bar to preserve original look.
+        """
+        if self._focused:
+            # Show blue accent bar when focused
+            self._focus_indicator.show()
+        else:
+            # Hide accent bar when not focused
+            self._focus_indicator.hide()
 
     def update_active_tab(self, callback_idx: int = 0) -> None:
         """
