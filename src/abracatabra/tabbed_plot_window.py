@@ -684,6 +684,11 @@ class TabbedPlotWindow:
 
         delay = ts * step / speed_scale
 
+        # Check if there are any windows to animate
+        if TabbedPlotWindow._count == 0:
+            print("No windows to animate. Skipping animation.")
+            return
+
         if use_player:
             player = AnimationPlayer.instance() or AnimationPlayer()
             player.save_button.clicked.connect(
