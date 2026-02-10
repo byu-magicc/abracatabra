@@ -22,7 +22,7 @@ class CustomNavToolbar(NavigationToolbar):
     }
     for text, tooltip, img, callback in NavigationToolbar.toolitems:
         if text in _shortcut_map:
-            tooltip = f"{tooltip}\n({_shortcut_map[text]})"
+            tooltip = f"{tooltip} ({_shortcut_map[text]})"
         toolitems.append((text, tooltip, img, callback))
 
 
