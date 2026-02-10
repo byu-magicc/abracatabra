@@ -780,8 +780,8 @@ class TabbedPlotWindow:
         animations: dict[TabbedPlotWindow, list[FigureWidget]] = {}
         for key in list(TabbedPlotWindow._registry.keys()):
             animation_tabs: list[FigureWidget] = []
-            # if not key in TabbedPlotWindow._registry:
-            #     continue  # in case window was closed during iteration
+            if not key in TabbedPlotWindow._registry:
+                continue  # in case window was closed during iteration
             window = TabbedPlotWindow._registry[key]
             for tabs in window.tab_groups:
                 for tab_id in tabs._figure_widgets:
