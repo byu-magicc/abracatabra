@@ -234,7 +234,8 @@ class FigureWidget(QtWidgets.QWidget):
             f"Destination: {path}", "Cancel", 0, frames, parent or self
         )
         progress.setWindowTitle("Saving Animation...")
-        progress.setWindowModality(QtCore.Qt.WindowModal)
+        progress.setWindowModality(QtCore.Qt.ApplicationModal)
+        progress.setCancelButton(None)  # Removes the cancel button
         progress.setMinimumDuration(0)
 
         def progress_callback(frame_idx, total_frames):
