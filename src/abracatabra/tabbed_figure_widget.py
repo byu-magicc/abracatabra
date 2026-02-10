@@ -42,7 +42,7 @@ class TabbedFigureWidget(QtWidgets.QTabWidget):
         """
         super().__init__()
         tabbar = self.tabBar()
-        # tabbar.setFocusPolicy(QtCore.Qt.FocusPolicy.StrongFocus)
+        tabbar.setFocusPolicy(QtCore.Qt.FocusPolicy.NoFocus)
         assert isinstance(tabbar, QtWidgets.QTabBar)
         tabbar.setAutoHide(autohide)
         tabbar.setContentsMargins(0, 0, 0, 0)
@@ -52,7 +52,8 @@ class TabbedFigureWidget(QtWidgets.QTabWidget):
         self._custom_widgets: dict[str, CustomWidget] = {}
         self._latest_callback_idx = 0
         self.currentChanged.connect(self._on_tab_changed)
-        self.setFocusPolicy(QtCore.Qt.FocusPolicy.StrongFocus)
+        self.tabBarClicked.connect(self._on_tab_clicked)
+        self.setFocusPolicy(QtCore.Qt.FocusPolicy.NoFocus)
 
     def __getitem__(self, tab_id: str | int) -> FigureWidget | CustomWidget:
         """
@@ -226,6 +227,25 @@ class TabbedFigureWidget(QtWidgets.QTabWidget):
         Args:
             index (int): The index of the newly selected tab.
         """
+        # Transfer focus to current widget so its shortcuts work when tab is clicked
+        current_widget = self.currentWidget()
+        if current_widget:
+            current_widget.setFocus()
+
         if self._latest_callback_idx > 0:
             # print(f"TabbedFigureWidget: switched to tab index {index}")
             self.update_active_tab(self._latest_callback_idx)
+
+    @QtCore.Slot(int)
+    def _on_tab_clicked(self, index: int) -> None:
+        """
+        Slot called when a tab is clicked. This transfers focus to the clicked
+        tab's widget, even if it was already the active tab. This ensures
+        shortcuts work when clicking on an already-visible tab.
+
+        Args:
+            index (int): The index of the clicked tab.
+        """
+        current_widget = self.currentWidget()
+        if current_widget:
+            current_widget.setFocus()

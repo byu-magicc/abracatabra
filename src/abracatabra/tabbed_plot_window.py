@@ -194,7 +194,7 @@ class TabbedPlotWindow:
         central_widget = QtWidgets.QWidget()
         self.qt.setCentralWidget(central_widget)
         self._setup_shortcuts()
-        self.qt.keyPressEvent = self._key_press_event
+        # self.qt.keyPressEvent = self._key_press_event
 
         if add_animation_player:
             central_layout = QtWidgets.QVBoxLayout(central_widget)
@@ -444,6 +444,7 @@ class TabbedPlotWindow:
         }
         for key, func in shortcuts.items():
             shortcut = QtGui.QShortcut(QtGui.QKeySequence(key), self.qt)
+            shortcut.setContext(QtCore.Qt.ShortcutContext.WindowShortcut)
             shortcut.activated.connect(func)
 
     def get_keyboard_shortcuts_str(self) -> str:
