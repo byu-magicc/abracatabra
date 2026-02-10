@@ -13,11 +13,10 @@ class TabGroupContainer:
         only one item in the list.
 
         Args:
-            group_list (list[list[TabbedFigureWidget]]): A list of lists, where
-                each inner list contains TabbedFigureWidget objects representing
-                a group of tabs.
-            row_major (bool): If True, the first index is the row index and the
-                second index is the column index. If False, the order is reversed.
+            group_list: A list of lists, where each inner list contains
+                TabbedFigureWidget objects representing a group of tabs.
+            row_major: If True, the first index is the row index and the second
+                index is the column index. If False, the order is reversed.
         """
         self._tab_groups: list[list[TabbedFigureWidget]] = group_list
         self._row_major = row_major
@@ -27,9 +26,9 @@ class TabGroupContainer:
         Returns the tab group at the given index.
 
         Args:
-            index (tuple[int, int]): A tuple containing two integers, where the
-                first integer is the row index and the second integer is the
-                column index. Must use 2 indices, even if there is only one item.
+            index: A tuple containing two integers, where the first integer is
+                the row index and the second integer is the column index. Must
+                use 2 indices, even if there is only one item.
         """
         if not isinstance(index, Sequence) or len(index) != 2:
             raise ValueError(f"Index must contain two integers, got {index}")

@@ -162,29 +162,26 @@ class TabbedPlotWindow:
         creating a new one. Only nrows or ncols can be a list, not both.
 
         Args:
-            window_id (str|int|None): The ID of the window. If None, a unique ID
-                will be created based on the number of existing windows.
-            nrows (int|list[int]): The number of rows of tab groups. If a list,
-                specifies the number of columns in each row, e.g. nrows=[1,2]
-                would have 1 row in the first column and 2 rows in the second
-                column.
-            ncols (int|list[int]): The number of columns of tab groups. If a
-                list, specifies the number of rows in each column,
-                e.g. ncols=[1,2] would have 1 column in the first row and 2
-                columns in the second row.
-            size (tuple[int|float, int|float]): Size of the window (width, height).
-                If an int, the value will be treated as pixels. If a float, it will be
-                treated as a percentage of the screen size (based on your
-                PRIMARY DISPLAY).
-            open_window (bool): If True, the window will be displayed
-                immediately after creation. Otherwise, it will be hidden until
-                another method is called to show it.
-            autohide_tabs (bool): If True, the tab bar will auto-hide when there
-                is only one tab in a tab group.
-            tab_position (str): The position of the tab bar. This can be 'top',
-                'bottom', 'left', or 'right' as well as 'north', 'south',
-                'east', or 'west' (logic only looks at first character).
-            tab_fontsize (int): The font size of the tab labels.
+            window_id: The ID of the window. If None, a unique ID will be created
+                based on the number of existing windows.
+            nrows: The number of rows of tab groups. If a list, specifies the
+                number of columns in each row, e.g. nrows=[1,2] would have 1 row
+                in the first column and 2 rows in the second column.
+            ncols: The number of columns of tab groups. If a list, specifies the
+                number of rows in each column, e.g. ncols=[1,2] would have 1
+                column in the first row and 2 columns in the second row.
+            size: Size of the window (width, height). If an int, the value will
+                be treated as pixels. If a float, it will be treated as a
+                percentage of the screen size (based on your PRIMARY DISPLAY).
+            open_window: If True, the window will be displayed immediately after
+                creation. Otherwise, it will be hidden until another method is
+                called to show it.
+            autohide_tabs: If True, the tab bar will auto-hide when there is only
+                one tab in a tab group.
+            tab_position: The position of the tab bar. This can be 'top', 'bottom',
+                'left', or 'right' as well as 'north', 'south', 'east', or 'west'
+                (logic only looks at first character).
+            tab_fontsize: The font size of the tab labels.
         """
         if hasattr(self, "id"):
             return
@@ -301,19 +298,21 @@ class TabbedPlotWindow:
         existing Figure will be returned instead of creating a new one.
 
         Args:
-            tab_id (str): The ID of the tab.
-            blit (bool): Whether blitting will be used with the Figure in this
-                tab. If True, you are responsible for managing the background
-                and updating individual artists.
-            include_toolbar (bool): Whether to display a matplotlib toolbar with
-                the Figure in this tab.
-            add_animation_player (bool): Whether to include an animation player
-                widget in this tab (play, pause, etc.). Only works if animation
+            tab_id: The ID of the tab.
+            blit: Whether blitting will be used with the Figure in this tab. If
+                True, you are responsible for managing the background and
+                updating individual artists.
+            include_toolbar: Whether to display a matplotlib toolbar with the
+                Figure in this tab.
+            add_animation_player: Whether to include an animation player widget
+                in this tab (play, pause, etc.). Only works if animation
                 callbacks are registered.
-            row (int): The row index of the tab group to add the tab to.
-            col (int): The column index of the tab group to add the tab to.
+            row: The row index of the tab group to add the tab to.
+            col: The column index of the tab group to add the tab to.
+
         Returns:
-            figure (Figure): The matplotlib figure in this tab.
+            figure: The matplotlib figure in this tab.
+
         Notes
         -----
         Can alternatively call `add_figure_tab` directly on a tab group:
@@ -342,20 +341,21 @@ class TabbedPlotWindow:
         given ID as the tab label. The ID must be unique within the tab group.
 
         Args:
-            widget (QWidget): The custom Qt widget to add as a tab.
-            tab_id (str): The ID of the tab.
-            add_animation_player (bool): Whether to include an animation player
-                widget in this tab (play, pause, etc.). Only works if animation
+            widget: The custom Qt widget to add as a tab.
+            tab_id: The ID of the tab.
+            add_animation_player: Whether to include an animation player widget
+                in this tab (play, pause, etc.). Only works if animation
                 callbacks are registered.
-            row (int): The row index of the tab group to add the tab to.
-            col (int): The column index of the tab group to add the tab to.
+            row: The row index of the tab group to add the tab to.
+            col: The column index of the tab group to add the tab to.
+
         Notes
         -----
         Can alternatively call `add_custom_tab` directly on a tab group:
         ```python
         window = TabbedPlotWindow(ncols=2)
-        tab_left = window.add_custom_tab("left", widget, row=0, col=0)
-        tab_right = window.tab_groups[0, 1].add_custom_tab("right", widget)
+        tab_left = window.add_custom_tab(widget, "left", row=0, col=0)
+        tab_right = window.tab_groups[0, 1].add_custom_tab(widget, "right")
         ```
         """
         tab_widget = self.tab_groups[row, col]
@@ -370,14 +370,13 @@ class TabbedPlotWindow:
         widget in the specified tab during an animation.
 
         Args:
-            tab_id (str): The ID/title of the tab.
-            callback (Callable[[int], None]): A function specifying how to update
-                the widget. The function should take a single integer argument,
-                which is the index of the current frame in the animation to draw.
-                Registering callbacks allows abracatabra to better manage the
-                timing of updates.
-            row (int): The row index of the tab group containing the tab.
-            col (int): The column index of the tab group containing the tab.
+            callback: A function specifying how to update the widget. The function
+                should take a single integer argument, which is the index of the
+                current frame in the animation to draw. Registering callbacks
+                allows abracatabra to better manage the timing of updates.
+            tab_id: The ID/title of the tab.
+            row: The row index of the tab group containing the tab.
+            col: The column index of the tab group containing the tab.
         """
         tab_widget = self.tab_groups[row, col][tab_id]
         tab_widget.register_animation_callback(callback)
@@ -498,9 +497,9 @@ class TabbedPlotWindow:
         screen.
 
         Args:
-            size (tuple[int|float, int|float]): Size of the window (width, height).
-                If an int, the value will be treated as pixels. If a float,
-                it will be treated as a percentage of the screen size.
+            size: Size of the window (width, height). If an int, the value will
+                be treated as pixels. If a float, it will be treated as a
+                percentage of the screen size.
         """
         width, height = size
         if width <= 0 or height <= 0:
@@ -542,7 +541,7 @@ class TabbedPlotWindow:
         when there is only one tab in a tab group.
 
         Args:
-            enable (bool): Whether to enable auto-hiding of tabs.
+            enable: Whether to enable auto-hiding of tabs.
         """
         for tabs in self.tab_groups:
             tabs.setTabBarAutoHide(enable)
@@ -552,9 +551,9 @@ class TabbedPlotWindow:
         Sets the position of the tab bar in the window.
 
         Args:
-            position (str): The position of the tab bar. This can be 'top',
-                'bottom', 'left', or 'right' as well as 'north', 'south',
-                'east', or 'west' (logic only looks at first character).
+            position: The position of the tab bar. This can be 'top', 'bottom',
+                'left', or 'right' as well as 'north', 'south', 'east', or 'west'
+                (logic only looks at first character).
         """
         for tabs in self.tab_groups:
             tabs.set_tab_position(position)
@@ -564,7 +563,7 @@ class TabbedPlotWindow:
         Sets the font size of the tab labels in the window.
 
         Args:
-            fontsize (int): The font size of the tab labels.
+            fontsize: The font size of the tab labels.
         """
         for tabs in self.tab_groups:
             tabs.set_tab_fontsize(fontsize)
@@ -575,13 +574,13 @@ class TabbedPlotWindow:
         Shows all created windows.
 
         Args:
-            tight_layout (bool): If True, applies a tight layout to all figures.
-            block (bool): If True, block and run the GUI until all windows are
-                closed, either individually or by pressing <ctrl+c> in the
-                terminal. If False, the function returns immediately after
-                showing the windows and you are responsible for ensuring the GUI
-                event loop is running (interactive environments do this for you).
-                Defaults to False in interactive environments, otherwise True.
+            tight_layout: If True, applies a tight layout to all figures.
+            block: If True, block and run the GUI until all windows are closed,
+                either individually or by pressing <ctrl+c> in the terminal. If
+                False, the function returns immediately after showing the windows
+                and you are responsible for ensuring the GUI event loop is running
+                (interactive environments do this for you).  Defaults to False in
+                interactive environments, otherwise True.
         """
         for key in list(TabbedPlotWindow._registry.keys()):
             if not key in TabbedPlotWindow._registry:
@@ -610,14 +609,16 @@ class TabbedPlotWindow:
         skipped to save time.
 
         Args:
-            delay_seconds (float): The minimum delay in seconds before returning.
+            delay_seconds: The minimum delay in seconds before returning.
                 If windows are updated faster than this, this function will
                 block until `delay_seconds` seconds have passed. If the windows
                 take longer than `delay_seconds` seconds to update, the function
                 execution time will be greater than `delay_seconds`.
+            callback_idx: An index passed to registered animation callbacks to
+                specify which frame to draw.
+
         Returns:
-            update_time (float): The amount of time (seconds) taken to update
-                the windows.
+            update_time: The amount of time (seconds) taken to update the windows.
         """
         start = time.perf_counter()
         for key in list(TabbedPlotWindow._registry.keys()):
@@ -648,28 +649,28 @@ class TabbedPlotWindow:
         registered animation callbacks for each tab that will be animated.
 
         Args:
-            frames (int): The number of frames to animate.
-            ts (float): The time step between frames in seconds. The intention
+            frames: The number of frames to animate.
+            ts (seconds): The time step between frames in seconds. The intention
                 is that this time step matches real time, e.g., a simulation
                 that saves data every `ts` seconds.
-            step (int): The step size between frames. For example, if you want
+            step: The step size between frames. For example, if you want
                 to animate every 2nd frame, set step=2. This is useful if your
                 animation is running slower than real time and you want to draw
                 batches of data between a single frame.
-            speed_scale (float): A scaling factor for the speed of the animation.
+            speed_scale: A scaling factor for the speed of the animation.
                 For example, if speed_scale=2.0, the animation will run twice as
                 fast (i.e., half the time step between frames), meaning that a
                 10 sec simulation should take 5 sec to animate.
-            print_timing (bool): If True, prints timing information for each frame,
-                inluding the running animation time and wall time. Also prints hints
+            print_timing: If True, prints timing information for each frame,
+                including the running animation time and wall time. Also prints hints
                 after the animation is done on how to improve performance if the
                 animation is running slower than real time.
-            use_player (bool): Specifies whether to use an animation player window
+            use_player: Specifies whether to use an animation player window
                 with media controls (play, pause, step, etc.) to control the
                 animation. If an animation player has already been added to a tab,
                 it will be used (even if `use_player` is False); otherwise, a new
                 animation player window will be created.
-            hold (bool): Specify whether to keep the windows open (blocking code)
+            hold: Specify whether to keep the windows open (blocking code)
                 at the last frame when the animation is complete. Essentially
                 whether to call `show_all()` at the end or not.
         """

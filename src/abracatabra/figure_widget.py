@@ -60,14 +60,13 @@ class FigureWidget(QtWidgets.QWidget):
         and optionally includes a navigation toolbar.
 
         Args:
-            name (str): The name of the figure widget, used as the default
-                filename when saving the figure.
-            blit (bool): If True, enables blitting for faster rendering.
-            include_toolbar (bool): If True, includes a navigation toolbar
-                with the canvas.
-            add_animation_player (bool): Whether to include an animation player
-                widget in this tab (play, pause, etc.). Only works if animation
-                callbacks are registered.
+            name: The name of the figure widget, used as the default filename
+                when saving the figure.
+            blit: If True, enables blitting for faster rendering.
+            include_toolbar: If True, includes a navigation toolbar with the canvas.
+            add_animation_player: Whether to include an animation player widget
+                in this tab (play, pause, etc.). Only works if animation callbacks
+                are registered.
             parent: The parent widget for this widget.
         """
         super().__init__(parent)
@@ -119,10 +118,9 @@ class FigureWidget(QtWidgets.QWidget):
         calling this method.
 
         Args:
-            callback_idx (int): An index passed to the registered animation
-                callback function. This index is intended to specify which frame
-                of the animation to draw, if an animation callback has been
-                registered.
+            callback_idx: An index passed to the registered animation callback
+                function. This index is intended to specify which frame of the
+                animation to draw, if an animation callback has been registered.
         """
         # Attempting to detect if the same frame as last time to avoid re-drawing
         if self._callback_registered and callback_idx == self._latest_callback_idx:
@@ -143,7 +141,7 @@ class FigureWidget(QtWidgets.QWidget):
         Show or hide the navigation toolbar.
 
         Args:
-            show (bool): If True, shows the toolbar. If False, hides it.
+            show: If True, shows the toolbar. If False, hides it.
         """
         self.toolbar.setVisible(show)
 
@@ -155,11 +153,10 @@ class FigureWidget(QtWidgets.QWidget):
         the callback function (callback is per figure not per axis/artist).
 
         Args:
-            callback (Callable[[int], None]): A function specifying how to update
-                the widget. The function should take a single integer argument,
-                which is the index of the current frame in the animation to draw.
-                Registering callbacks allows abracatabra to better manage the
-                timing of updates.
+            callback: A function specifying how to update the widget. The function
+                should take a single integer argument, which is the index of the
+                current frame in the animation to draw. Registering callbacks
+                allows abracatabra to better manage the timing of updates.
         """
         self._update_callback = callback
         self._callback_registered = True
@@ -178,9 +175,15 @@ class FigureWidget(QtWidgets.QWidget):
         MP4 video (recommended) or gif.
 
         Args:
-            filename (str | None): The filename to save the animation to. If None,
-                uses the default filename specified by `canvas.get_default_filename()`.
+            frames: The number of frames in the animation.
+            dt (seconds): The time step between frames in seconds. If None,
+                matplotlib will use default interval.
+            filename: The filename to save the animation to. If None, uses the
+                default filename specified by `canvas.get_default_filename()`.
             **kwargs: Additional keyword arguments passed to `matplotlib.animation.FuncAnimation.save()`.
+
+        Returns:
+            path: Path to the saved file, or None if the save dialog was cancelled.
         """
         from matplotlib.animation import FuncAnimation
 

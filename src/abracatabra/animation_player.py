@@ -294,6 +294,7 @@ class AnimationPlayer(QtWidgets.QWidget):
         main_layout.addLayout(bottom_row)
 
         # create new window if no parent
+        self._parent = parent
         if not parent:
             self.setWindowTitle("Animation Player")
             self.setMinimumWidth(600)
@@ -313,14 +314,13 @@ class AnimationPlayer(QtWidgets.QWidget):
             for sc in self.quit_shortcuts:
                 sc.activated.connect(self.close)
             AnimationPlayer.register_shortcuts(self)
-        self._parent = parent
 
         # allow focus from clicks and tabbing
         self.setFocusPolicy(QtCore.Qt.FocusPolicy.StrongFocus)
 
     def closeEvent(self, event: QtGui.QCloseEvent) -> None:
         """
-        Overrides the closeEvent to pause the animation when the player is closed.
+        Overrides the closeEvent to reset the singleton instance.
 
         Args:
             event (QCloseEvent): The close event.

@@ -11,8 +11,13 @@ os.environ["QT_LOGGING_RULES"] = "qt.accessibility.atspi=false"
 
 class TabbedFigureWidget(QtWidgets.QTabWidget):
     """
-    A Qt widget that can contains multiple tabs, each with a matplotlib Figure.
-    This class inherits from QTabWidget in order to create a tabbed interface.
+    A Qt widget that can contain multiple tabs, each with a matplotlib Figure
+    or custom widget. This class inherits from QTabWidget to create a tabbed
+    interface with visual focus indication (blue accent bar when focused).
+
+    The widget automatically manages focus by transferring it to tab contents
+    when tabs are clicked or changed, ensuring keyboard shortcuts work properly.
+    An event filter tracks focus changes to show/hide the focus indicator.
 
     Methods:
         `update_active_tab`: Updates the currently active tab's widget.
@@ -52,6 +57,13 @@ class TabbedFigureWidget(QtWidgets.QTabWidget):
     def __getitem__(self, tab_id: str | int) -> FigureWidget | CustomWidget:
         """
         Provides dictionary-like access to tabs by their ID for convenience.
+
+        Args:
+            tab_id (str|int): The title/ID of the tab.
+
+        Returns:
+            widget (FigureWidget | CustomWidget): The widget associated with the
+                given tab ID.
         """
         return self.get_tab(tab_id)
 
@@ -81,7 +93,11 @@ class TabbedFigureWidget(QtWidgets.QTabWidget):
         """
         Adds a new tab to the widget with the given title/tab_id, which
         creates and returns a matplotlib Figure. Tabs are displayed in the
-        order they are added.
+        order they are added. If the tab ID already exists, returns the
+        existing Figure without creating a new tab.
+
+        The new tab widget has an event filter installed to track focus changes
+        for the focus indicator.
 
         Args:
             tab_id (str|int): The title/ID of the tab. If the tab ID already
@@ -93,6 +109,9 @@ class TabbedFigureWidget(QtWidgets.QTabWidget):
             add_animation_player (bool): Whether to include an animation player
                 widget in this tab (play, pause, etc.). Only works if animation
                 callbacks are registered.
+
+        Returns:
+            figure: The matplotlib Figure object for the tab.
         """
         id_ = str(tab_id)
         if id_ in self._figure_widgets:
@@ -123,12 +142,18 @@ class TabbedFigureWidget(QtWidgets.QTabWidget):
         contains the provided custom Qt widget. Tabs are displayed in the
         order they are added.
 
+        The new tab widget has an event filter installed to track focus changes
+        for the focus indicator.
+
         Args:
             widget (QWidget): The custom Qt widget to add as a tab.
-            tab_id (str|int): The title/ID of the tab.
+            tab_id (str|int): The title/ID of the tab. Must be unique.
             add_animation_player (bool): Whether to include an animation player
                 widget in this tab (play, pause, etc.). Only works if animation
                 callbacks are registered.
+
+        Raises:
+            ValueError: If a tab with the given ID already exists.
         """
         id_ = str(tab_id)
         if id_ in self._figure_widgets | self._custom_widgets:
@@ -146,8 +171,10 @@ class TabbedFigureWidget(QtWidgets.QTabWidget):
             tab_id (str|int): The title/ID of the tab.
 
         Returns:
-            widget (FigureWidget | CustomWidget): The widget associated with the
-                given tab ID.
+            widget: The widget associated with the given tab ID.
+
+        Raises:
+            ValueError: If no tab with the given ID exists.
         """
         id_ = str(tab_id)
         if id_ in self._figure_widgets:
@@ -193,7 +220,8 @@ class TabbedFigureWidget(QtWidgets.QTabWidget):
     def _on_tab_changed(self, index: int) -> None:
         """
         Slot called when the current tab is changed. This is used to make sure
-        the animation callback is called for the newly active tab.
+        the animation callback is called for the newly active tab, and to
+        transfer focus to the newly active widget so its shortcuts work.
 
         Args:
             index (int): The index of the newly selected tab.

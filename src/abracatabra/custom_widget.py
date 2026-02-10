@@ -23,10 +23,10 @@ class CustomWidget(QtWidgets.QWidget):
         Initializes the CustomWidget.
 
         Args:
-            widget (QtWidgets.QWidget): The custom Qt widget to include.
-            add_animation_player (bool): Whether to include an animation player
-                widget in this tab (play, pause, etc.). Only works if animation
-                callbacks are registered.
+            widget: The custom Qt widget to include.
+            add_animation_player: Whether to include an animation player widget
+                in this tab (play, pause, etc.). Only works if animation callbacks
+                are registered.
             parent: The parent widget for this widget.
         """
         super().__init__(parent)
@@ -52,9 +52,9 @@ class CustomWidget(QtWidgets.QWidget):
         callback function.
 
         Args:
-            callback_idx (int): An index passed to the registered animation
-                callback function. This index is intended to specify which frame
-                in the animation to draw.
+            callback_idx: An index passed to the registered animation callback
+                function. This index is intended to specify which frame in the
+                animation to draw.
         """
         # Attempting to detect if the same frame as last time to avoid re-drawing
         if self._callback_registered and callback_idx == self._latest_callback_idx:
@@ -69,11 +69,10 @@ class CustomWidget(QtWidgets.QWidget):
         an animation.
 
         Args:
-            callback (Callable[[int], None]): A function specifying how to update
-                the widget. The function should take a single integer argument,
-                which is the index of the current frame in the animation to draw.
-                Registering callbacks allows abracatabra to better manage the
-                timing of updates.
+            callback: A function specifying how to update the widget. The function
+                should take a single integer argument, which is the index of the
+                current frame in the animation to draw. Registering callbacks
+                allows abracatabra to better manage the timing of updates.
         """
         self._animation_callback = callback
         self._callback_registered = True

@@ -29,8 +29,8 @@ def show_all_windows(tight_layout: bool = False, block: bool | None = None) -> N
     Shows all created windows.
 
     Args:
-        tight_layout (bool): If True, applies a tight layout to all figures.
-        block (bool): If True, block and run the GUI until all windows are
+        tight_layout: If True, applies a tight layout to all figures.
+        block: If True, block and run the GUI until all windows are
             closed, either individually or by pressing <ctrl+c> in the terminal.
             If False, the function returns immediately after showing the windows
             and you are responsible for ensuring the GUI event loop is running
@@ -53,14 +53,16 @@ def update_all_windows(delay_seconds: float = 0.0, callback_idx: int = 0) -> flo
     skipped to save time.
 
     Args:
-        delay_seconds (float): The minimum delay in seconds before returning. If
+        delay_seconds: The minimum delay in seconds before returning. If
             windows are updated faster than this, this function will block until
             `delay_seconds` seconds have passed. If the windows take longer than
             `delay_seconds` seconds to update, the function execution time will
             be greater than `delay_seconds`.
+        callback_idx: An index passed to registered animation callbacks to
+            specify which frame to draw.
+
     Returns:
-        update_time (float): The amount of time (seconds) taken to update the
-            windows.
+        update_time: The amount of time (seconds) taken to update the windows.
     See Also
     -----
     `show_all_windows()`: shows all created windows.
@@ -87,30 +89,30 @@ def animate_all_windows(
     registered animation callbacks for each tab that will be animated.
 
     Args:
-        frames (int): The number of frames to animate.
-        ts (float): The time step between frames in seconds. The intention
+        frames: The number of frames to animate.
+        ts (seconds): The time step between frames in seconds. The intention
             is that this time step matches real time, e.g., a simulation
             that saves data every `ts` seconds.
-        step (int): The step size between frames. For example, if you want
-            to animate every 2nd frame, set step=2. This is useful if your
-            animation is running slower than real time and you want to draw
-            batches of data between a single frame.
-        speed_scale (float): A scaling factor for the speed of the animation.
+        step: The step size between frames. For example, if you want to animate
+            every 2nd frame, set step=2. This is useful if your animation is
+            running slower than real time and you want to draw batches of data
+            between a single frame.
+        speed_scale: A scaling factor for the speed of the animation.
             For example, if speed_scale=2.0, the animation will run twice as
             fast (i.e., half the time step between frames), meaning that a
             10 sec simulation should take 5 sec to animate.
-        print_timing (bool): If True, prints timing information for each frame,
-            inluding the running animation time and wall time. Also prints hints
-            after the animation is done on how to improve performance if the
-            animation is running slower than real time.
-        use_player (bool): Specifies whether to use an animation player window
-            with media controls (play, pause, step, etc.) to control the
-            animation. If an animation player has already been added to a tab,
-            it will be used (even if `use_player` is False); otherwise, a new
-            animation player window will be created.
-        hold (bool): Specify whether to keep the windows open (blocking code)
-            at the last frame when the animation is complete. Essentially
-            whether to call `show_all_windows()` at the end or not.
+        print_timing: If True, prints timing information for each frame, including
+            the running animation time and wall time. Also prints hints after the
+            animation is done on how to improve performance if the animation is
+            running slower than real time.
+        use_player: Specifies whether to use an animation player window with media
+            controls (play, pause, step, etc.) to control the animation. If an
+            animation player has already been added to a tab, it will be used
+            (even if `use_player` is False); otherwise, a new animation player
+            window will be created.
+        hold: Specify whether to keep the windows open (blocking code) at the last
+            frame when the animation is complete. Essentially whether to call
+            `show_all_windows()` at the end or not.
     See Also
     -----
     `update_all_windows()`: updates all open tabbed plot windows.
@@ -119,6 +121,14 @@ def animate_all_windows(
         frames, ts, step, speed_scale, print_timing, use_player, hold
     )
 
+def save_animations(frames: int, ts: float, **kwargs) -> None:
+    """
+    Opens a file dialog that will display all tabs with registered animation
+    callbacks and allow you to save the animation for each tab as a video file.
+    This function uses `matplotlib.animation.FuncAnimation` under the hood, so
+    it may not be the most efficient way to save animations, but it is a convenient way to save animations without having to manually create `FuncAnimation` objects for each tab. Note that this function will save the animation for all tabs with registered animation callbacks, so if you only want to save the animation for a specific tab, you should use `FuncAnimation` directly on that tab's figure.
+    """
+    TabbedPlotWindow.save_animations(frames, ts, **kwargs)
 
 def abracatabra(
     tight_layout: bool = False, block: bool | None = None, verbose: bool = True
@@ -127,14 +137,15 @@ def abracatabra(
     A more fun equivalent to `show_all_windows()`. Shows all created windows.
 
     Args:
-        tight_layout (bool): If True, applies a tight layout to all figures.
-        block (bool): If True, block and run the GUI until all windows are
-            closed, either individually or by pressing <ctrl+c> in the terminal.
-            If False, the function returns immediately after showing the windows
-            and you are responsible for ensuring the GUI event loop is running
-            (interactive environments do this for you).
-            Defaults to False in interactive environments, otherwise True.
-        verbose (bool): If True, prints a message when showing windows.
+        tight_layout: If True, applies a tight layout to all figures.
+        block: If True, block and run the GUI until all windows are closed, either
+            individually or by pressing <ctrl+c> in the terminal. If False, the
+            function returns immediately after showing the windows and you are
+            responsible for ensuring the GUI event loop is running (interactive
+            environments do this for you).  Defaults to False in interactive
+            environments, otherwise True.
+        verbose: If True, prints a message when showing windows.
+
     See Also
     -----
     `show_all_windows()` : shows all created windows.
