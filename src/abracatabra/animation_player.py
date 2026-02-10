@@ -95,6 +95,19 @@ class AnimationPlayer(QtWidgets.QWidget):
         self.setLayout(main_layout)
         self.std_icon = self.style().standardIcon
 
+        # Visual indicator for focused player (thin accent bar)
+        self._focused = False
+        self._focus_indicator = QtWidgets.QWidget(self)
+        self._focus_indicator.setFixedHeight(3)
+        self._focus_indicator.setStyleSheet("background-color: #2196F3;")
+        self._focus_indicator.hide()
+        self._update_focus_indicator_position()
+        
+        # Connect to global focus change signal to show/hide focus indicator
+        app = QtWidgets.QApplication.instance()
+        if app:
+            app.focusChanged.connect(self._on_focus_changed)
+
         # buttons
         self.play_button = QtWidgets.QPushButton()
         self.play_button.setFocusPolicy(QtCore.Qt.FocusPolicy.NoFocus)
@@ -310,6 +323,51 @@ class AnimationPlayer(QtWidgets.QWidget):
         """
         super().closeEvent(event)
         AnimationPlayer._instance = None
+
+    def _on_focus_changed(self, old_widget, new_widget):
+        """
+        Slot called when application focus changes. Updates the focus
+        indicator based on whether the new focused widget is this player
+        or one of its descendants.
+        
+        Args:
+            old_widget: The previously focused widget (may be None).
+            new_widget: The newly focused widget (may be None).
+        """
+        # Check if the newly focused widget is this player or a child of it
+        has_focus = (new_widget is not None and 
+                     (new_widget is self or self.isAncestorOf(new_widget)))
+        
+        if self._focused != has_focus:
+            self._focused = has_focus
+            self._update_focus_style()
+
+    def _update_focus_indicator_position(self):
+        """
+        Position the focus indicator bar at the top edge of the widget.
+        """
+        self._focus_indicator.setGeometry(0, 0, self.width(), 3)
+        self._focus_indicator.raise_()
+
+    def resizeEvent(self, event):
+        """
+        Handle resize events to reposition the focus indicator bar.
+
+        Args:
+            event: The resize event.
+        """
+        super().resizeEvent(event)
+        self._update_focus_indicator_position()
+
+    def _update_focus_style(self):
+        """
+        Update the visual style of the player based on focus state.
+        Shows a thin blue accent bar at the top when focused.
+        """
+        if self._focused:
+            self._focus_indicator.show()
+        else:
+            self._focus_indicator.hide()
 
     def setup(
         self,
