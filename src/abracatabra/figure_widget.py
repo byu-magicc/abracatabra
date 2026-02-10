@@ -81,6 +81,7 @@ class FigureWidget(QtWidgets.QWidget):
         if isinstance(name, int):
             name = f"figure_{name}"
         self._id: str = name
+        name = name.replace(" ", "_")
         self.canvas.get_default_filetype = lambda: "pdf"
         self.canvas.get_default_filename = lambda: f"{name}.pdf"
 
@@ -195,7 +196,7 @@ class FigureWidget(QtWidgets.QWidget):
         if not video_dir.exists():
             video_dir = Path.home()
         default_filename = filename or Path(
-            self.canvas.get_default_filename().replace(" ", "_")
+            self.canvas.get_default_filename()
         ).with_suffix(".mp4")
         filename, _ = QtWidgets.QFileDialog.getSaveFileName(
             self,
