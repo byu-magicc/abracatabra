@@ -750,7 +750,7 @@ class TabbedPlotWindow:
         TabbedPlotWindow.close_all_windows()
 
     @staticmethod
-    def save_animations(frames: int, ts: float) -> None:
+    def save_animations(frames: int, ts: float, **kwargs) -> None:
         """
         Opens a dialog to save detected animations from all windows as video
         files. An animation is detected if a tab has a registered animation
@@ -827,17 +827,22 @@ class TabbedPlotWindow:
                 row_layout.addStretch()
                 save_button = QtWidgets.QPushButton("Save")
 
-                def save_fn():
-                    status_label.setText(f"Saving...")
-                    save_path = tab.save_animation(frames, ts)
-                    if save_path:
-                        status_label.setText(f"Saved {save_path.name}")
-                        save_button.setText("Saved!")
-                        save_button.setEnabled(False)
-                    else:
-                        status_label.setText(f"Save canceled/failed")
+                def make_save_fn(current_tab, button):
+                    def save_fn():
+                        status_label.setText(f"Saving...")
+                        save_path = current_tab.save_animation(
+                            frames, ts, parent=save_dialog, **kwargs
+                        )
+                        if save_path:
+                            status_label.setText(f"Saved {save_path.name}")
+                            button.setText("Saved!")
+                            button.setEnabled(False)
+                        else:
+                            status_label.setText(f"Save canceled/failed")
 
-                save_button.clicked.connect(save_fn)
+                    return save_fn
+
+                save_button.clicked.connect(make_save_fn(tab, save_button))
                 row_layout.addWidget(save_button)
 
                 container_layout.addWidget(row)

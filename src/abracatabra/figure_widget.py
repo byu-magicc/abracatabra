@@ -167,6 +167,7 @@ class FigureWidget(QtWidgets.QWidget):
         frames: int,
         dt: float | None = None,
         filename: str | None = None,
+        parent: QtWidgets.QWidget | None = None,
         **kwargs,
     ) -> Path | None:
         """
@@ -199,7 +200,7 @@ class FigureWidget(QtWidgets.QWidget):
             self.canvas.get_default_filename()
         ).with_suffix(".mp4")
         filename, _ = QtWidgets.QFileDialog.getSaveFileName(
-            self,
+            parent or self,
             "Save Animation",
             str(video_dir / default_filename),
             "MP4 Video (*.mp4);;GIF Image (*.gif);;All Files (*)",
@@ -212,14 +213,18 @@ class FigureWidget(QtWidgets.QWidget):
             return ()
 
         anim = FuncAnimation(
-            self.figure, animate, frames, interval=dt * 1000 if dt else None
+            self.figure,
+            animate,
+            frames,
+            interval=dt * 1000 if dt else None,
+            blit=self.blit,
         )
         path = Path(filename)
         if not path.suffix.lower() in [".mp4", ".gif"]:
             filename += ".mp4"  # default to mp4 if no valid extension
 
         progress = QtWidgets.QProgressDialog(
-            f"Destination: {path}", "Cancel", 0, frames, self
+            f"Destination: {path}", "Cancel", 0, frames, parent or self
         )
         progress.setWindowTitle("Saving Animation...")
         progress.setWindowModality(QtCore.Qt.WindowModal)
