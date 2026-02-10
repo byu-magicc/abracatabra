@@ -690,8 +690,8 @@ class TabbedPlotWindow:
             )
             player.setFocus(QtCore.Qt.FocusReason.ActiveWindowFocusReason)
 
-            # for window in TabbedPlotWindow._registry.values():
-            #     AnimationPlayer.register_shortcuts(window.qt)
+            for window in TabbedPlotWindow._registry.values():
+                player.register_shortcuts(window.qt)
 
             def callback(frame: int):
                 TabbedPlotWindow.update_all(0.0, frame)
