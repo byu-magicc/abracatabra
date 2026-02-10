@@ -452,10 +452,10 @@ class TabbedPlotWindow:
             "General Controls:\n"
             "    q: Close focused window\n"
             "    Ctrl+q: Close all windows\n"
+            "    Tab: Focus next tab group\n"
+            "    Shift+Tab: Focus previous tab group\n"
             "    ?: Show this help dialog\n\n"
             "Tab Widget Controls:\n"
-            "    RightArrow: Focus tab to the right\n"
-            "    LeftArrow: Focus tab to the left\n"
             "    Ctrl+Tab: Next tab\n"
             "    Ctrl+Shift+Tab: Previous tab\n"
             f"\n{FigureWidget.help_text}"
@@ -482,7 +482,6 @@ class TabbedPlotWindow:
         open. If not, it will exit the application.
         """
         event.accept()
-        # self.qt.closeEvent(event)
         del TabbedPlotWindow._registry[self.id]
         TabbedPlotWindow._count -= 1
         if TabbedPlotWindow._count != 0:
@@ -490,7 +489,6 @@ class TabbedPlotWindow:
         player = AnimationPlayer.instance()
         if player:
             player.close()
-        #     self._app.quit()
 
     def set_size(self, size: tuple[int | float, int | float]) -> None:
         """
@@ -775,9 +773,6 @@ class TabbedPlotWindow:
                 for tab_id in tabs._figure_widgets:
                     if tabs[tab_id]._callback_registered:
                         animation_tabs.append(tabs[tab_id])
-                    # if isinstance(tab, FigureWidget) and tab._callback_registered:
-                    #     animation_tabs.append(tab)
-                    # animation_figs.append(tab.figure)
             animations[window] = animation_tabs
 
         if len(animations) == 0:
@@ -845,17 +840,11 @@ class TabbedPlotWindow:
                             button.setEnabled(False)
                         else:
                             status_label.setText(f"Save canceled/failed")
-
                     return save_fn
 
                 save_button.clicked.connect(make_save_fn(tab, save_button))
                 row_layout.addWidget(save_button)
-
                 container_layout.addWidget(row)
-
-            # print(f"Window {win.id} has {len(animations[win])} animation tabs.")
-            # for tab in animations[win]:
-            #     print(f"  Tab '{tab._id}' has a registered animation callback.")
         layout.addWidget(bottom_row)
 
         save_dialog.adjustSize()

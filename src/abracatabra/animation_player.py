@@ -102,7 +102,7 @@ class AnimationPlayer(QtWidgets.QWidget):
         self._focus_indicator.setStyleSheet("background-color: #2196F3;")
         self._focus_indicator.hide()
         self._update_focus_indicator_position()
-        
+
         # Connect to global focus change signal to show/hide focus indicator
         app = QtWidgets.QApplication.instance()
         if app:
@@ -115,18 +115,6 @@ class AnimationPlayer(QtWidgets.QWidget):
         self.play_button.setIcon(icon)
         self.play_button.setToolTip("Play (k/Space)")
         self.play_button.clicked.connect(self._on_play_clicked)
-        # shortcuts = [
-        #     QtGui.QKeySequence(keys.Key_K),
-        #     QtGui.QKeySequence(keys.Key_Space),
-        #     QtGui.QKeySequence(keys.Key_MediaTogglePlayPause),
-        #     QtGui.QKeySequence(keys.Key_MediaPlay),
-        #     QtGui.QKeySequence(keys.Key_MediaPause),
-        # ]
-        # self.play_shortcuts = []
-        # for shortcut in shortcuts:
-        #     play_shortcut = QtGui.QShortcut(shortcut, self)
-        #     play_shortcut.activated.connect(self.play_button.click)
-        #     self.play_shortcuts.append(play_shortcut)
 
         self.restart_button = QtWidgets.QPushButton()
         self.restart_button.setFocusPolicy(QtCore.Qt.FocusPolicy.NoFocus)
@@ -134,8 +122,6 @@ class AnimationPlayer(QtWidgets.QWidget):
         self.restart_button.setIcon(icon)
         self.restart_button.setToolTip("Restart animation (Home)")
         self.restart_button.clicked.connect(self._on_restart_clicked)
-        # self.restart_shortcut = QtGui.QShortcut(QtGui.QKeySequence(keys.Key_Home), self)
-        # self.restart_shortcut.activated.connect(self.restart_button.click)
 
         self.end_button = QtWidgets.QPushButton()
         self.end_button.setFocusPolicy(QtCore.Qt.FocusPolicy.NoFocus)
@@ -143,8 +129,6 @@ class AnimationPlayer(QtWidgets.QWidget):
         self.end_button.setIcon(icon)
         self.end_button.setToolTip("Go to end of animation (End)")
         self.end_button.clicked.connect(self._on_end_clicked)
-        # self.end_shortcut = QtGui.QShortcut(QtGui.QKeySequence(keys.Key_End), self)
-        # self.end_shortcut.activated.connect(self.end_button.click)
 
         self.prev_button = QtWidgets.QPushButton()
         self.prev_button.setFocusPolicy(QtCore.Qt.FocusPolicy.NoFocus)
@@ -155,15 +139,6 @@ class AnimationPlayer(QtWidgets.QWidget):
         self.prev_button.setAutoRepeat(True)
         self.prev_button.setAutoRepeatDelay(500)
         self.prev_button.setAutoRepeatInterval(50)
-        # shortcuts = [
-        #     QtGui.QKeySequence(keys.Key_Left),
-        #     QtGui.QKeySequence(keys.ControlModifier | keys.Key_MediaPrevious),
-        # ]
-        # self.prev_shortcuts = []
-        # for shortcut in shortcuts:
-        #     prev_shortcut = QtGui.QShortcut(shortcut, self)
-        #     prev_shortcut.activated.connect(self.prev_button.click)
-        #     self.prev_shortcuts.append(prev_shortcut)
 
         self.jump_back_button = QtWidgets.QPushButton()
         self.jump_back_button.setFocusPolicy(QtCore.Qt.FocusPolicy.NoFocus)
@@ -176,15 +151,6 @@ class AnimationPlayer(QtWidgets.QWidget):
         self.jump_back_button.setAutoRepeatInterval(
             self.prev_button.autoRepeatInterval() * 2
         )
-        # shortcuts = [
-        #     QtGui.QKeySequence(keys.ControlModifier | keys.Key_Left),
-        #     QtGui.QKeySequence(keys.Key_MediaPrevious),
-        # ]
-        # self.jump_back_shortcuts = []
-        # for shortcut in shortcuts:
-        #     jump_back_shortcut = QtGui.QShortcut(shortcut, self)
-        #     jump_back_shortcut.activated.connect(self.jump_back_button.click)
-        #     self.jump_back_shortcuts.append(jump_back_shortcut)
 
         self.next_button = QtWidgets.QPushButton()
         self.next_button.setFocusPolicy(QtCore.Qt.FocusPolicy.NoFocus)
@@ -195,15 +161,6 @@ class AnimationPlayer(QtWidgets.QWidget):
         self.next_button.setAutoRepeat(self.prev_button.autoRepeat())
         self.next_button.setAutoRepeatDelay(self.prev_button.autoRepeatDelay())
         self.next_button.setAutoRepeatInterval(self.prev_button.autoRepeatInterval())
-        # shortcuts = [
-        #     QtGui.QKeySequence(keys.Key_Right),
-        #     QtGui.QKeySequence(keys.ControlModifier | keys.Key_MediaNext),
-        # ]
-        # self.next_shortcuts = []
-        # for shortcut in shortcuts:
-        #     next_shortcut = QtGui.QShortcut(shortcut, self)
-        #     next_shortcut.activated.connect(self.next_button.click)
-        #     self.next_shortcuts.append(next_shortcut)
 
         self.jump_forward_button = QtWidgets.QPushButton()
         self.jump_forward_button.setFocusPolicy(QtCore.Qt.FocusPolicy.NoFocus)
@@ -218,24 +175,12 @@ class AnimationPlayer(QtWidgets.QWidget):
         self.jump_forward_button.setAutoRepeatInterval(
             self.jump_back_button.autoRepeatInterval()
         )
-        # shortcuts = [
-        #     QtGui.QKeySequence(keys.ControlModifier | keys.Key_Right),
-        #     QtGui.QKeySequence(keys.Key_MediaNext),
-        # ]
-        # self.jump_forward_shortcuts = []
-        # for shortcut in shortcuts:
-        #     jump_forward_shortcut = QtGui.QShortcut(shortcut, self)
-        #     jump_forward_shortcut.activated.connect(self.jump_forward_button.click)
-        #     self.jump_forward_shortcuts.append(jump_forward_shortcut)
 
         self.save_button = QtWidgets.QPushButton()
         self.save_button.setFocusPolicy(QtCore.Qt.FocusPolicy.NoFocus)
         icon = self.std_icon(QtWidgets.QStyle.StandardPixmap.SP_DialogSaveButton)
         self.save_button.setIcon(icon)
         self.save_button.setToolTip("Save animation videos (Ctrl+s)")
-        # shortcut = QtGui.QKeySequence(keys.ControlModifier | keys.Key_S)
-        # self.save_shortcut = QtGui.QShortcut(shortcut, self)
-        # self.save_shortcut.activated.connect(self.save_button.click)
 
         # slider
         self.slider = QtWidgets.QSlider(QtCore.Qt.Orientation.Horizontal)
@@ -247,7 +192,6 @@ class AnimationPlayer(QtWidgets.QWidget):
         self.slider.setFocusPolicy(QtCore.Qt.FocusPolicy.ClickFocus)
 
         # spin box
-
         self.spin_box = QtWidgets.QSpinBox()
         self.spin_box.setMinimum(0)
         self.spin_box.setMaximum(0)
@@ -329,15 +273,15 @@ class AnimationPlayer(QtWidgets.QWidget):
         Slot called when application focus changes. Updates the focus
         indicator based on whether the new focused widget is this player
         or one of its descendants.
-        
+
         Args:
             old_widget: The previously focused widget (may be None).
             new_widget: The newly focused widget (may be None).
         """
         # Check if the newly focused widget is this player or a child of it
-        has_focus = (new_widget is not None and 
+        has_focus = (new_widget is not None and
                      (new_widget is self or self.isAncestorOf(new_widget)))
-        
+
         if self._focused != has_focus:
             self._focused = has_focus
             self._update_focus_style()

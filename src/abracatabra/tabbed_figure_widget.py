@@ -63,7 +63,7 @@ class TabbedFigureWidget(QtWidgets.QTabWidget):
         self._focus_indicator.hide()
         self._update_focus_indicator_position()
         self._update_focus_style()
-        
+
         # Connect to global focus change signal instead of using event filters
         # This eliminates race conditions from deferred callbacks during cleanup
         app = QtWidgets.QApplication.instance()
@@ -88,17 +88,17 @@ class TabbedFigureWidget(QtWidgets.QTabWidget):
         Slot called when application focus changes. Updates the focus
         indicator based on whether the new focused widget is a descendant
         of this tab group.
-        
+
         This approach is cleaner than using event filters and deferred
         callbacks, eliminating race conditions during widget cleanup.
-        
+
         Args:
             old_widget: The previously focused widget (may be None).
             new_widget: The newly focused widget (may be None).
         """
         # Check if the newly focused widget is a child of this tab group
         has_focus = new_widget is not None and self.isAncestorOf(new_widget)
-        
+
         if self._focused != has_focus:
             self._focused = has_focus
             self._update_focus_style()
@@ -185,11 +185,6 @@ class TabbedFigureWidget(QtWidgets.QTabWidget):
         new_tab = FigureWidget(
             tab_id, blit, include_toolbar, add_animation_player, self
         )
-        # if self.tabBar().autoHide():
-        #     if self.count() == 0:
-        #         new_tab.setFocusPolicy(QtCore.Qt.FocusPolicy.StrongFocus)
-        #     else:
-        #         self.widget(0).setFocusPolicy(QtCore.Qt.FocusPolicy.NoFocus)
         self._figure_widgets[id_] = new_tab
         idx = self.currentIndex()
         super().addTab(new_tab, id_)
@@ -298,7 +293,6 @@ class TabbedFigureWidget(QtWidgets.QTabWidget):
             current_widget.setFocus()
 
         if self._latest_callback_idx > 0:
-            # print(f"TabbedFigureWidget: switched to tab index {index}")
             self.update_active_tab(self._latest_callback_idx)
 
     @QtCore.Slot(int)
