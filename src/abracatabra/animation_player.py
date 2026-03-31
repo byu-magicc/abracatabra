@@ -1,5 +1,11 @@
-from typing import Callable, Optional, Self
 from matplotlib.backends.qt_compat import QtWidgets, QtCore, QtGui
+import sys
+from typing import Callable, Optional
+
+if sys.version_info < (3, 11):
+    from typing_extensions import Self
+else:
+    from typing import Self
 
 from . import keys
 
