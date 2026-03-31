@@ -124,6 +124,13 @@ def animate_all_windows(
     )
 
 
+def close_all_windows() -> None:
+    """
+    Closes all windows created by abracatabra.
+    """
+    TabbedPlotWindow.close_all()
+
+
 def save_animations(frames: int, ts: float, **kwargs) -> None:
     """
     Opens a file dialog that will display all tabs with registered animation

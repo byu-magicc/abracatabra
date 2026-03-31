@@ -102,7 +102,7 @@ class TabbedPlotWindow:
         `show_all`: Shows all created windows.
         `update_all`: Updates all created windows.
         `animate_all`: Animates all created windows.
-        `close_all_windows`: Closes all created windows.
+        `close_all`: Closes all created windows.
         `get_screen_size`: Returns the size of the screen in pixels.
     """
 
@@ -407,7 +407,7 @@ class TabbedPlotWindow:
         shortcuts = {
             keys.Key_Question: self.display_keyboard_shortcuts,
             keys.Key_Q: self.qt.close,
-            keys.Key_Q | keys.ControlModifier: TabbedPlotWindow.close_all_windows,
+            keys.Key_Q | keys.ControlModifier: TabbedPlotWindow.close_all,
         }
         for key, func in shortcuts.items():
             shortcut = QtGui.QShortcut(QtGui.QKeySequence(key), self.qt)
@@ -679,7 +679,7 @@ class TabbedPlotWindow:
                 if TabbedPlotWindow._count > 0:
                     remaining_delay = max(delay - update_time, 0.0)
                     time.sleep(remaining_delay)
-            TabbedPlotWindow.close_all_windows()
+            TabbedPlotWindow.close_all()
             return
 
         start = time.perf_counter()
@@ -718,7 +718,7 @@ class TabbedPlotWindow:
 
         if hold:
             TabbedPlotWindow.show_all()
-        TabbedPlotWindow.close_all_windows()
+        TabbedPlotWindow.close_all()
 
     @staticmethod
     def save_animations(
@@ -847,7 +847,7 @@ class TabbedPlotWindow:
         FigureWidget.set_animation_savedir(save_dir)
 
     @staticmethod
-    def close_all_windows() -> None:
+    def close_all() -> None:
         """
         Closes all created windows.
         """
