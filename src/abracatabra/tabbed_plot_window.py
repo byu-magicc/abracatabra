@@ -4,24 +4,24 @@ import sys
 import os
 import time
 import random
-from typing import Callable
 from pathlib import Path
+from typing import Callable
 
 if sys.version_info < (3, 11):
     from typing_extensions import Self
 else:
     from typing import Self
 
-from matplotlib.figure import Figure
-from matplotlib.backends.qt_compat import QtWidgets, QtCore, QtGui
-
-# from PySide6 import QtWidgets, QtCore, QtGui
-
 # Fix plot font types to work in paper sumbissions (Don't use type 3 fonts)
 import matplotlib
 
 matplotlib.rcParams["pdf.fonttype"] = 42
 matplotlib.rcParams["ps.fonttype"] = 42
+
+from matplotlib.figure import Figure
+from matplotlib.backends.qt_compat import QtWidgets, QtCore, QtGui
+
+# from PySide6 import QtWidgets, QtCore, QtGui
 
 from .animation_player import AnimationPlayer
 from .figure_widget import FigureWidget
