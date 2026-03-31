@@ -775,7 +775,8 @@ class TabbedPlotWindow:
                 for tab_id in tabs._figure_widgets:
                     if tabs[tab_id]._callback_registered:
                         animation_tabs.append(tabs[tab_id])
-            animations[window] = animation_tabs
+            if len(animation_tabs) > 0:
+                animations[window] = animation_tabs
 
         if len(animations) == 0:
             QtWidgets.QMessageBox.information(
