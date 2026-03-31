@@ -534,6 +534,27 @@ class TabbedPlotWindow:
         for tabs in self.tab_groups:
             tabs.set_tab_fontsize(fontsize)
 
+    def _has_registered_callback(self) -> bool:
+        return any(
+            [
+                [
+                    tabs[tab_id]
+                    for tab_id in tabs._figure_widgets
+                    if tabs[tab_id]._callback_registered
+                ]
+                for tabs in self.tab_groups
+            ]
+        )
+
+    @staticmethod
+    def _close_all_registered_callback_windows():
+        for key in list(TabbedPlotWindow._registry.keys()):
+            if not key in TabbedPlotWindow._registry:
+                continue  # in case window was closed during iteration
+            window = TabbedPlotWindow._registry[key]
+            if window._has_registered_callback():
+                window.qt.close()
+
     @staticmethod
     def show_all(tight_layout: bool = False, block: bool | None = None) -> None:
         """
@@ -679,7 +700,8 @@ class TabbedPlotWindow:
                 if TabbedPlotWindow._count > 0:
                     remaining_delay = max(delay - update_time, 0.0)
                     time.sleep(remaining_delay)
-            TabbedPlotWindow.close_all()
+            player.close()  # ensure player is closed so new instance can be made
+            TabbedPlotWindow._close_all_registered_callback_windows()
             return
 
         start = time.perf_counter()
@@ -717,8 +739,8 @@ class TabbedPlotWindow:
                 print("Try increasing 'step'")
 
         if hold:
-            TabbedPlotWindow.show_all()
-        TabbedPlotWindow.close_all()
+            TabbedPlotWindow.show_all(block=True)
+        TabbedPlotWindow._close_all_registered_callback_windows()
 
     @staticmethod
     def save_animations(

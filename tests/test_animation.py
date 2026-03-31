@@ -110,6 +110,10 @@ def test_animation(attached_player: bool, attach_location: str = "figure", save=
     #     tab = window.tab_groups[0, 0].get_tab("robot arm animation")
     #     tab.save_animation(frames=len(theta_hist), dt=dt, filename="test.mp4")
 
+    # Add window that won't close with AnimationPlayer
+    win_ = abracatabra.TabbedPlotWindow("test")
+    fig_ = win_.add_figure_tab("blah")
+
     abracatabra.animate_all_windows(len(theta_hist), ts=dt, use_player=True)
     assert True
 
@@ -118,3 +122,4 @@ if __name__ == "__main__":
     test_animation(attached_player=False, save=True)
     test_animation(attached_player=True, attach_location="figure")
     test_animation(attached_player=True, attach_location="window")
+    abracatabra.abracatabra()
