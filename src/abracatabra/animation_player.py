@@ -285,8 +285,9 @@ class AnimationPlayer(QtWidgets.QWidget):
             new_widget: The newly focused widget (may be None).
         """
         # Check if the newly focused widget is this player or a child of it
-        has_focus = (new_widget is not None and
-                     (new_widget is self or self.isAncestorOf(new_widget)))
+        has_focus = new_widget is not None and (
+            new_widget is self or self.isAncestorOf(new_widget)
+        )
 
         if self._focused != has_focus:
             self._focused = has_focus
