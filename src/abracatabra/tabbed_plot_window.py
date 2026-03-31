@@ -195,7 +195,6 @@ class TabbedPlotWindow:
         central_widget = QtWidgets.QWidget()
         self.qt.setCentralWidget(central_widget)
         self._setup_shortcuts()
-        # self.qt.keyPressEvent = self._key_press_event
 
         if add_animation_player:
             central_layout = QtWidgets.QVBoxLayout(central_widget)
@@ -400,39 +399,6 @@ class TabbedPlotWindow:
             self.qt.show()
         for tabs in self.tab_groups:
             tabs.update_active_tab(callback_idx)
-
-    def _key_press_event(self, event: QtGui.QKeyEvent):
-        """
-        Qt event function - DO NOT CALL DIRECTLY.
-
-        This method is called when a key is pressed while the window is in
-        focus. It will close the window if 'q' is pressed, or close all windows
-        if 'ctrl+q' is pressed.
-        """
-        player = AnimationPlayer.instance()
-        print("window key press:", event.text())
-        # if player and player._parent is None:
-        #     TabbedPlotWindow._app.postEvent(player, event)
-        #     # TabbedPlotWindow._app.sendEvent(player, event)
-
-        # key_used = True
-        # match event.key():
-        #     case keys.Key_Question:
-        #         self.display_keyboard_shortcuts()
-        #     case keys.Key_Q:
-        #         if event.modifiers() & keys.ControlModifier:
-        #             TabbedPlotWindow.close_all_windows()
-        #             if player:
-        #                 player.close()
-        #         else:
-        #             self.qt.close()
-        #     case _:
-        #         key_used = False
-        #
-        # if not key_used and player and player._parent is None:
-        #     player.keyPressEvent(event)
-        # else:
-        #     QtWidgets.QMainWindow.keyPressEvent(self.qt, event)
 
     def _setup_shortcuts(self):
         """
