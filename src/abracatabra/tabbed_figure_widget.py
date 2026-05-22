@@ -9,6 +9,15 @@ from .custom_widget import CustomWidget
 os.environ["QT_LOGGING_RULES"] = "qt.accessibility.atspi=false"
 
 
+def _safe_disconnect_focus_signal(app, slot) -> None:
+    if app is None or slot is None:
+        return
+    try:
+        app.focusChanged.disconnect(slot)
+    except (RuntimeError, TypeError, SystemError):
+        pass
+
+
 class TabbedFigureWidget(QtWidgets.QTabWidget):
     """
     A Qt widget that can contain multiple tabs, each with a matplotlib Figure
@@ -63,12 +72,18 @@ class TabbedFigureWidget(QtWidgets.QTabWidget):
         self._focus_indicator.hide()
         self._update_focus_indicator_position()
         self._update_focus_style()
+        self._app = QtWidgets.QApplication.instance()
+        self._focus_signal_connected = False
+        self._focus_changed_slot = self._on_focus_changed
 
         # Connect to global focus change signal instead of using event filters
         # This eliminates race conditions from deferred callbacks during cleanup
-        app = QtWidgets.QApplication.instance()
-        if app:
-            app.focusChanged.connect(self._on_focus_changed)
+        if self._app:
+            self._app.focusChanged.connect(self._focus_changed_slot)
+            self._focus_signal_connected = True
+            self.destroyed.connect(
+                lambda *_args, app=self._app, slot=self._focus_changed_slot: _safe_disconnect_focus_signal(app, slot)
+            )
 
     def __getitem__(self, tab_id: str | int) -> FigureWidget | CustomWidget:
         """
@@ -102,6 +117,12 @@ class TabbedFigureWidget(QtWidgets.QTabWidget):
         if self._focused != has_focus:
             self._focused = has_focus
             self._update_focus_style()
+
+    def _disconnect_focus_signal(self) -> None:
+        if not self._focus_signal_connected or self._app is None:
+            return
+        _safe_disconnect_focus_signal(self._app, self._focus_changed_slot)
+        self._focus_signal_connected = False
 
     def _update_focus_indicator_position(self):
         """

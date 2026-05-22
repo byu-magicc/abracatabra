@@ -882,6 +882,10 @@ class TabbedPlotWindow:
                 continue  # in case window was closed elsewhere during iteration
             window = TabbedPlotWindow._registry[key]
             window.qt.close()
+            window.qt.deleteLater()
+        if TabbedPlotWindow._app is not None:
+            TabbedPlotWindow._app.processEvents()
+        TabbedPlotWindow._count = len(TabbedPlotWindow._registry)
 
     @staticmethod
     def get_screen_size() -> tuple[int, int]:

@@ -12,6 +12,15 @@ from . import keys
 # from PySide6 import QtWidgets, QtCore, QtGui
 
 
+def _safe_disconnect_focus_signal(app, slot) -> None:
+    if app is None or slot is None:
+        return
+    try:
+        app.focusChanged.disconnect(slot)
+    except (RuntimeError, TypeError, SystemError):
+        pass
+
+
 class AnimationPlayer(QtWidgets.QWidget):
     """
     A simple player widget for controlling animations. This is a singleton class,
@@ -108,11 +117,17 @@ class AnimationPlayer(QtWidgets.QWidget):
         self._focus_indicator.setStyleSheet("background-color: #2196F3;")
         self._focus_indicator.hide()
         self._update_focus_indicator_position()
+        self._app = QtWidgets.QApplication.instance()
+        self._focus_signal_connected = False
+        self._focus_changed_slot = self._on_focus_changed
 
         # Connect to global focus change signal to show/hide focus indicator
-        app = QtWidgets.QApplication.instance()
-        if app:
-            app.focusChanged.connect(self._on_focus_changed)
+        if self._app:
+            self._app.focusChanged.connect(self._focus_changed_slot)
+            self._focus_signal_connected = True
+            self.destroyed.connect(
+                lambda *_args, app=self._app, slot=self._focus_changed_slot: _safe_disconnect_focus_signal(app, slot)
+            )
 
         # buttons
         self.play_button = QtWidgets.QPushButton()
@@ -271,8 +286,15 @@ class AnimationPlayer(QtWidgets.QWidget):
         Args:
             event (QCloseEvent): The close event.
         """
+        self._disconnect_focus_signal()
         super().closeEvent(event)
         AnimationPlayer._instance = None
+
+    def _disconnect_focus_signal(self) -> None:
+        if not self._focus_signal_connected or self._app is None:
+            return
+        _safe_disconnect_focus_signal(self._app, self._focus_changed_slot)
+        self._focus_signal_connected = False
 
     def _on_focus_changed(self, old_widget, new_widget):
         """
