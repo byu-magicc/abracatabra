@@ -1,5 +1,9 @@
 # AbracaTABra
 
+[![PyPI](https://img.shields.io/pypi/v/abracatabra.svg)](https://pypi.org/project/abracatabra/)
+[![CI](https://github.com/byu-magicc/abracatabra/actions/workflows/ci.yml/badge.svg)](https://github.com/byu-magicc/abracatabra/actions/workflows/ci.yml)
+[![Build and publish to PyPI](https://github.com/byu-magicc/abracatabra/actions/workflows/publish.yml/badge.svg)](https://github.com/byu-magicc/abracatabra/actions/workflows/publish.yml)
+
 This repository is basically a matplotlib extension using the Qt backend to create plot windows with groups of tabs, where the contents of each tab is a matplotlib figure.
 This package is essentially a replacement for pyplot; it creates and manages figures separately from pyplot, so calling `pyplot.show()` or `pyplot.pause()` will not do anything with windows created from this package.
 This package provides the functions `show_all_windows()` and `update_all_windows(delay_seconds)`, which are very similar in behavior to `show()` and `pause(interval)`, respectively, from pyplot.
@@ -9,10 +13,10 @@ Also, `abracatabra()` is a more fun equivalent to `show_all_windows()`...you sho
 
 - matplotlib
 - One of the following Qt bindings for Python (this is the order matplotlib looks for them):
-    - PyQt6
-    - PySide6 (preferred option)
-    - PyQt5
-    - PySide2
+  - PyQt6
+  - PySide6 (preferred option)
+  - PyQt5
+  - PySide2
 
 ## Installation
 
@@ -29,6 +33,7 @@ A Python Qt package is required for functionality, but there is no good way to h
 - [qt-pyqt6]
 
 For example, run this to install PySide6 along with this package:
+
 ```
 pip install "abracatabra[qt-pyside6]"
 ```
